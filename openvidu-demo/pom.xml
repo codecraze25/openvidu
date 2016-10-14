@@ -5,8 +5,9 @@
 	<parent>
 		<groupId>org.openvidu</groupId>
 		<artifactId>openvidu</artifactId>
-		<version>6.6.1-SNAPSHOT</version>
+		<version>0.0.1-SNAPSHOT</version>
 	</parent>
+	
 	<artifactId>openvidu-demo</artifactId>
 	<packaging>jar</packaging>
 
@@ -61,7 +62,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.openvidu</groupId>
-			<artifactId>openvidu-client-js</artifactId>
+			<artifactId>openvidu-browser</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.openvidu</groupId>
