@@ -5,17 +5,17 @@ npm run browserify
 
 cd ../../../../
 
-# openvidu-sample-basic-plainjs
-cp openvidu-browser/src/main/resources/static/js/OpenVidu.js ../openvidu-sample-basic-plainjs/web/OpenVidu.js
+# openvidu-insecure-js
+cp openvidu-browser/src/main/resources/static/js/OpenVidu.js ../openvidu-tutorials/openvidu-insecure-js/web/OpenVidu.js
 
-# openvidu-sample-secure
-cp openvidu-browser/src/main/resources/static/js/OpenVidu.js ../openvidu-sample-secure/src/main/resources/static/OpenVidu.js
+# openvidu-js-java
+cp openvidu-browser/src/main/resources/static/js/OpenVidu.js ../openvidu-tutorials/openvidu-js-java/src/main/resources/static/OpenVidu.js
 
-# openvidu-sample-secure-mvc
-cp openvidu-browser/src/main/resources/static/js/OpenVidu.js ../openvidu-sample-secure-mvc/demo-java-mvc-secure/src/main/resources/static/OpenVidu.js
+# openvidu-mvc-java
+cp openvidu-browser/src/main/resources/static/js/OpenVidu.js ../openvidu-tutorials/openvidu-mvc-java/src/main/resources/static/OpenVidu.js
 
-# openvidu-sample-secure-spa-node
-cp openvidu-browser/src/main/resources/static/js/OpenVidu.js ../openvidu-sample-secure-spa-node/public/OpenVidu.js
+# openvidu-js-node
+cp openvidu-browser/src/main/resources/static/js/OpenVidu.js ../openvidu-tutorials/openvidu-js-node/public/OpenVidu.js
 
-# openvidu-sample-secure-mvc-node
-cp openvidu-browser/src/main/resources/static/js/OpenVidu.js ../openvidu-sample-secure-mvc-node/public/OpenVidu.js
+# openvidu-mvc-node
+cp openvidu-browser/src/main/resources/static/js/OpenVidu.js ../openvidu-tutorials/openvidu-mvc-node/public/OpenVidu.js
