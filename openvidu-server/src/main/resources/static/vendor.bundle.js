@@ -5,8 +5,8 @@ webpackJsonp([3,4],[
 "use strict";
 
 var root_1 = __webpack_require__(16);
-var toSubscriber_1 = __webpack_require__(253);
-var observable_1 = __webpack_require__(66);
+var toSubscriber_1 = __webpack_require__(268);
+var observable_1 = __webpack_require__(68);
 /**
  * A representation of any set of values over any amount of time. This is the most basic building block
  * of RxJS.
@@ -269,9 +269,9 @@ exports.Observable = Observable;
 /* WEBPACK VAR INJECTION */(function(global) {/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_tslib__ = __webpack_require__(6);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_rxjs_Observable__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_rxjs_Observable___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_rxjs_Observable__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_rxjs_observable_merge__ = __webpack_require__(98);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_rxjs_observable_merge__ = __webpack_require__(105);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_rxjs_observable_merge___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_rxjs_observable_merge__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_rxjs_operator_share__ = __webpack_require__(103);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_rxjs_operator_share__ = __webpack_require__(110);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_rxjs_operator_share___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3_rxjs_operator_share__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_rxjs_Subject__ = __webpack_require__(20);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_rxjs_Subject___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_4_rxjs_Subject__);
@@ -471,7 +471,7 @@ exports.Observable = Observable;
 /* unused harmony export ɵu */
 
 /**
- * @license Angular v4.4.3
+ * @license Angular v4.4.4
  * (c) 2010-2017 Google, Inc. https://angular.io/
  * License: MIT
  */
@@ -1267,7 +1267,7 @@ var Version = (function () {
 /**
  * \@stable
  */
-var VERSION = new Version('4.4.3');
+var VERSION = new Version('4.4.4');
 /**
  * @license
  * Copyright Google Inc. All Rights Reserved.
@@ -6127,7 +6127,7 @@ var SystemJsNgModuleLoader = (function () {
         if (exportName === undefined) {
             exportName = 'default';
         }
-        return __webpack_require__(119)(module)
+        return __webpack_require__(120)(module)
             .then(function (module) { return module[exportName]; })
             .then(function (type) { return checkNotEmpty(type, module, exportName); })
             .then(function (type) { return _this._compiler.compileModuleAsync(type); });
@@ -6143,7 +6143,7 @@ var SystemJsNgModuleLoader = (function () {
             exportName = 'default';
             factoryClassSuffix = '';
         }
-        return __webpack_require__(119)(this._config.factoryPathPrefix + module + this._config.factoryPathSuffix)
+        return __webpack_require__(120)(this._config.factoryPathPrefix + module + this._config.factoryPathSuffix)
             .then(function (module) { return module[exportName + factoryClassSuffix]; })
             .then(function (factory) { return checkNotEmpty(factory, module, exportName); });
     };
@@ -12392,33 +12392,19 @@ function viewDef(flags, nodes, updateDirectives, updateRenderer) {
     var /** @type {?} */ viewRootNodeFlags = 0;
     var /** @type {?} */ viewMatchedQueries = 0;
     var /** @type {?} */ currentParent = null;
+    var /** @type {?} */ currentRenderParent = null;
     var /** @type {?} */ currentElementHasPublicProviders = false;
     var /** @type {?} */ currentElementHasPrivateProviders = false;
     var /** @type {?} */ lastRenderRootNode = null;
     for (var /** @type {?} */ i = 0; i < nodes.length; i++) {
-        while (currentParent && i > currentParent.index + currentParent.childCount) {
-            var /** @type {?} */ newParent = currentParent.parent;
-            if (newParent) {
-                newParent.childFlags |= ((currentParent.childFlags));
-                newParent.childMatchedQueries |= currentParent.childMatchedQueries;
-            }
-            currentParent = newParent;
-        }
         var /** @type {?} */ node = nodes[i];
         node.index = i;
         node.parent = currentParent;
         node.bindingIndex = viewBindingCount;
         node.outputIndex = viewDisposableCount;
-        // renderParent needs to account for ng-container!
-        var /** @type {?} */ currentRenderParent = void 0;
-        if (currentParent && currentParent.flags & 1 /* TypeElement */ &&
-            !((currentParent.element)).name) {
-            currentRenderParent = currentParent.renderParent;
-        }
-        else {
-            currentRenderParent = currentParent;
-        }
         node.renderParent = currentRenderParent;
+        viewNodeFlags |= node.flags;
+        viewMatchedQueries |= node.matchedQueryIds;
         if (node.element) {
             var /** @type {?} */ elDef = node.element;
             elDef.publicProviders =
@@ -12427,24 +12413,11 @@ function viewDef(flags, nodes, updateDirectives, updateRenderer) {
             // Note: We assume that all providers of an element are before any child element!
             currentElementHasPublicProviders = false;
             currentElementHasPrivateProviders = false;
-        }
-        validateNode(currentParent, node, nodes.length);
-        viewNodeFlags |= node.flags;
-        viewMatchedQueries |= node.matchedQueryIds;
-        if (node.element && node.element.template) {
-            viewMatchedQueries |= node.element.template.nodeMatchedQueries;
-        }
-        if (currentParent) {
-            currentParent.childFlags |= node.flags;
-            currentParent.directChildFlags |= node.flags;
-            currentParent.childMatchedQueries |= node.matchedQueryIds;
-            if (node.element && node.element.template) {
-                currentParent.childMatchedQueries |= node.element.template.nodeMatchedQueries;
+            if (node.element.template) {
+                viewMatchedQueries |= node.element.template.nodeMatchedQueries;
             }
         }
-        else {
-            viewRootNodeFlags |= node.flags;
-        }
+        validateNode(currentParent, node, nodes.length);
         viewBindingCount += node.bindings.length;
         viewDisposableCount += node.outputs.length;
         if (!currentRenderParent && (node.flags & 3 /* CatRenderNode */)) {
@@ -12468,7 +12441,7 @@ function viewDef(flags, nodes, updateDirectives, updateRenderer) {
                 if (!currentElementHasPrivateProviders) {
                     currentElementHasPrivateProviders = true; /** @type {?} */
                     ((((
-                    // Use protoyypical inheritance to not get O(n^2) complexity...
+                    // Use prototypical inheritance to not get O(n^2) complexity...
                     currentParent)).element)).allProviders =
                         Object.create(/** @type {?} */ ((((currentParent)).element)).publicProviders);
                 } /** @type {?} */
@@ -12478,17 +12451,45 @@ function viewDef(flags, nodes, updateDirectives, updateRenderer) {
                 ((((currentParent)).element)).componentProvider = node;
             }
         }
-        if (node.childCount) {
+        if (currentParent) {
+            currentParent.childFlags |= node.flags;
+            currentParent.directChildFlags |= node.flags;
+            currentParent.childMatchedQueries |= node.matchedQueryIds;
+            if (node.element && node.element.template) {
+                currentParent.childMatchedQueries |= node.element.template.nodeMatchedQueries;
+            }
+        }
+        else {
+            viewRootNodeFlags |= node.flags;
+        }
+        if (node.childCount > 0) {
             currentParent = node;
+            if (!isNgContainer(node)) {
+                currentRenderParent = node;
+            }
         }
-    }
-    while (currentParent) {
-        var /** @type {?} */ newParent = currentParent.parent;
-        if (newParent) {
-            newParent.childFlags |= currentParent.childFlags;
-            newParent.childMatchedQueries |= currentParent.childMatchedQueries;
+        else {
+            // When the current node has no children, check if it is the last children of its parent.
+            // When it is, propagate the flags up.
+            // The loop is required because an element could be the last transitive children of several
+            // elements. We loop to either the root or the highest opened element (= with remaining
+            // children)
+            while (currentParent && i === currentParent.index + currentParent.childCount) {
+                var /** @type {?} */ newParent = currentParent.parent;
+                if (newParent) {
+                    newParent.childFlags |= currentParent.childFlags;
+                    newParent.childMatchedQueries |= currentParent.childMatchedQueries;
+                }
+                currentParent = newParent;
+                // We also need to update the render parent & account for ng-container
+                if (currentParent && isNgContainer(currentParent)) {
+                    currentRenderParent = currentParent.renderParent;
+                }
+                else {
+                    currentRenderParent = currentParent;
+                }
+            }
         }
-        currentParent = newParent;
     }
     var /** @type {?} */ handleEvent = function (view, nodeIndex, eventName, event) { return ((((nodes[nodeIndex].element)).handleEvent))(view, eventName, event); };
     return {
@@ -12499,11 +12500,17 @@ function viewDef(flags, nodes, updateDirectives, updateRenderer) {
         nodeMatchedQueries: viewMatchedQueries, flags: flags,
         nodes: nodes,
         updateDirectives: updateDirectives || NOOP,
-        updateRenderer: updateRenderer || NOOP,
-        handleEvent: handleEvent || NOOP,
+        updateRenderer: updateRenderer || NOOP, handleEvent: handleEvent,
         bindingCount: viewBindingCount,
         outputCount: viewDisposableCount, lastRenderRootNode: lastRenderRootNode
     };
+}
+/**
+ * @param {?} node
+ * @return {?}
+ */
+function isNgContainer(node) {
+    return (node.flags & 1 /* TypeElement */) !== 0 && ((node.element)).name === null;
 }
 /**
  * @param {?} parent
@@ -15306,10 +15313,10 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var isFunction_1 = __webpack_require__(71);
+var isFunction_1 = __webpack_require__(73);
 var Subscription_1 = __webpack_require__(15);
-var Observer_1 = __webpack_require__(94);
-var rxSubscriber_1 = __webpack_require__(67);
+var Observer_1 = __webpack_require__(101);
+var rxSubscriber_1 = __webpack_require__(69);
 /**
  * Implements the {@link Observer} interface and extends the
  * {@link Subscription} class. While the {@link Observer} is the public API for
@@ -15835,7 +15842,7 @@ module.exports = g;
 /* unused harmony export ɵe */
 
 /**
- * @license Angular v4.4.3
+ * @license Angular v4.4.4
  * (c) 2010-2017 Google, Inc. https://angular.io/
  * License: MIT
  */
@@ -20242,7 +20249,7 @@ var By = (function () {
 /**
  * \@stable
  */
-var VERSION = new __WEBPACK_IMPORTED_MODULE_2__angular_core__["d" /* Version */]('4.4.3');
+var VERSION = new __WEBPACK_IMPORTED_MODULE_2__angular_core__["d" /* Version */]('4.4.4');
 /**
  * @license
  * Copyright Google Inc. All Rights Reserved.
@@ -20277,12 +20284,12 @@ var VERSION = new __WEBPACK_IMPORTED_MODULE_2__angular_core__["d" /* Version */]
 
 "use strict";
 
-var isArray_1 = __webpack_require__(70);
-var isObject_1 = __webpack_require__(107);
-var isFunction_1 = __webpack_require__(71);
-var tryCatch_1 = __webpack_require__(109);
-var errorObject_1 = __webpack_require__(69);
-var UnsubscriptionError_1 = __webpack_require__(252);
+var isArray_1 = __webpack_require__(72);
+var isObject_1 = __webpack_require__(114);
+var isFunction_1 = __webpack_require__(73);
+var tryCatch_1 = __webpack_require__(116);
+var errorObject_1 = __webpack_require__(71);
+var UnsubscriptionError_1 = __webpack_require__(267);
 /**
  * Represents a disposable resource, such as the execution of an Observable. A
  * Subscription has one important method, `unsubscribe`, that takes no argument
@@ -20665,9 +20672,9 @@ var __extends = (this && this.__extends) || function (d, b) {
 var Observable_1 = __webpack_require__(0);
 var Subscriber_1 = __webpack_require__(4);
 var Subscription_1 = __webpack_require__(15);
-var ObjectUnsubscribedError_1 = __webpack_require__(105);
-var SubjectSubscription_1 = __webpack_require__(205);
-var rxSubscriber_1 = __webpack_require__(67);
+var ObjectUnsubscribedError_1 = __webpack_require__(112);
+var SubjectSubscription_1 = __webpack_require__(220);
+var rxSubscriber_1 = __webpack_require__(69);
 /**
  * @class SubjectSubscriber<T>
  */
@@ -20950,13 +20957,13 @@ exports.OuterSubscriber = OuterSubscriber;
 "use strict";
 
 var root_1 = __webpack_require__(16);
-var isArrayLike_1 = __webpack_require__(106);
-var isPromise_1 = __webpack_require__(108);
-var isObject_1 = __webpack_require__(107);
+var isArrayLike_1 = __webpack_require__(113);
+var isPromise_1 = __webpack_require__(115);
+var isObject_1 = __webpack_require__(114);
 var Observable_1 = __webpack_require__(0);
-var iterator_1 = __webpack_require__(65);
-var InnerSubscriber_1 = __webpack_require__(202);
-var observable_1 = __webpack_require__(66);
+var iterator_1 = __webpack_require__(67);
+var InnerSubscriber_1 = __webpack_require__(217);
+var observable_1 = __webpack_require__(68);
 function subscribeToResult(outerSubscriber, result, outerValue, outerIndex) {
     var destination = new InnerSubscriber_1.InnerSubscriber(outerSubscriber, outerValue, outerIndex);
     if (destination.closed) {
@@ -21086,7 +21093,7 @@ exports.subscribeToResult = subscribeToResult;
 /* unused harmony export ɵb */
 
 /**
- * @license Angular v4.4.3
+ * @license Angular v4.4.4
  * (c) 2010-2017 Google, Inc. https://angular.io/
  * License: MIT
  */
@@ -25053,7 +25060,7 @@ function isPlatformWorkerUi(platformId) {
 /**
  * \@stable
  */
-var VERSION = new __WEBPACK_IMPORTED_MODULE_1__angular_core__["d" /* Version */]('4.4.3');
+var VERSION = new __WEBPACK_IMPORTED_MODULE_1__angular_core__["d" /* Version */]('4.4.4');
 /**
  * @license
  * Copyright Google Inc. All Rights Reserved.
@@ -25104,7 +25111,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var Observable_1 = __webpack_require__(0);
-var ScalarObservable_1 = __webpack_require__(63);
+var ScalarObservable_1 = __webpack_require__(65);
 var EmptyObservable_1 = __webpack_require__(38);
 var isScheduler_1 = __webpack_require__(41);
 /**
@@ -26038,7 +26045,7 @@ exports.isScheduler = isScheduler;
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "j", function() { return AnimationGroupPlayer; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "k", function() { return ɵPRE_STYLE; });
 /**
- * @license Angular v4.4.3
+ * @license Angular v4.4.4
  * (c) 2010-2017 Google, Inc. https://angular.io/
  * License: MIT
  */
@@ -29376,6 +29383,636 @@ module.exports = Array.isArray || function (arr) {
 
 "use strict";
 
+Object.defineProperty(exports, "__esModule", { value: true });
+var OpenViduErrorName;
+(function (OpenViduErrorName) {
+    OpenViduErrorName["CAMERA_ACCESS_DENIED"] = "CAMERA_ACCESS_DENIED";
+    OpenViduErrorName["MICROPHONE_ACCESS_DENIED"] = "MICROPHONE_ACCESS_DENIED";
+    OpenViduErrorName["SCREEN_CAPTURE_DENIED"] = "SCREEN_CAPTURE_DENIED";
+    OpenViduErrorName["NO_VIDEO_DEVICE"] = "NO_VIDEO_DEVICE";
+    OpenViduErrorName["NO_INPUT_DEVICE"] = "NO_INPUT_DEVICE";
+    OpenViduErrorName["SCREEN_EXTENSION_NOT_INSTALLED"] = "SCREEN_EXTENSION_NOT_INSTALLED";
+    OpenViduErrorName["GENERIC_ERROR"] = "GENERIC_ERROR";
+})(OpenViduErrorName = exports.OpenViduErrorName || (exports.OpenViduErrorName = {}));
+var OpenViduError = /** @class */ (function () {
+    function OpenViduError(name, message) {
+        this.name = name;
+        this.message = message;
+    }
+    return OpenViduError;
+}());
+exports.OpenViduError = OpenViduError;
+//# sourceMappingURL=OpenViduError.js.map
+
+/***/ }),
+/* 64 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var OpenViduError_1 = __webpack_require__(63);
+var EventEmitter = __webpack_require__(32);
+var kurentoUtils = __webpack_require__(207);
+var adapter = __webpack_require__(119);
+if (window) {
+    window["adapter"] = adapter;
+}
+function jq(id) {
+    return id.replace(/(@|:|\.|\[|\]|,)/g, "\\$1");
+}
+function show(id) {
+    document.getElementById(jq(id)).style.display = 'block';
+}
+function hide(id) {
+    document.getElementById(jq(id)).style.display = 'none';
+}
+var Stream = /** @class */ (function () {
+    function Stream(openVidu, local, room, options) {
+        var _this = this;
+        this.openVidu = openVidu;
+        this.local = local;
+        this.room = room;
+        this.ee = new EventEmitter();
+        this.videoElements = [];
+        this.elements = [];
+        this.showMyRemote = false;
+        this.localMirrored = false;
+        this.chanId = 0;
+        this.dataChannelOpened = false;
+        this.activeAudio = true;
+        this.activeVideo = true;
+        this.isReady = false;
+        this.isVideoELementCreated = false;
+        this.accessIsAllowed = false;
+        this.accessIsDenied = false;
+        this.isScreenRequestedReady = false;
+        this.isScreenRequested = false;
+        if (options !== 'screen-options') {
+            this.configureOptions(options);
+        }
+        else {
+            this.isScreenRequested = true;
+            this.connection = this.room.getLocalParticipant();
+        }
+        this.addEventListener('src-added', function (srcEvent) {
+            _this.videoSrcObject = srcEvent.srcObject;
+            if (_this.video)
+                _this.video.srcObject = srcEvent.srcObject;
+            console.debug("Video srcObject [" + srcEvent.srcObject + "] added to stream [" + _this.getId() + "]");
+        });
+    }
+    Stream.prototype.emitSrcEvent = function (wrstream) {
+        this.ee.emitEvent('src-added', [{
+                srcObject: wrstream
+            }]);
+    };
+    Stream.prototype.emitStreamReadyEvent = function () {
+        this.ee.emitEvent('stream-ready'), [{}];
+    };
+    Stream.prototype.getVideoSrcObject = function () {
+        return this.videoSrcObject;
+    };
+    Stream.prototype.removeVideo = function (parentElement) {
+        if (typeof parentElement === "string") {
+            document.getElementById(parentElement).removeChild(this.video);
+        }
+        else if (parentElement instanceof Element) {
+            parentElement.removeChild(this.video);
+        }
+        else if (!parentElement) {
+            if (document.getElementById(this.parentId)) {
+                document.getElementById(this.parentId).removeChild(this.video);
+            }
+        }
+    };
+    Stream.prototype.getVideoElement = function () {
+        return this.video;
+    };
+    Stream.prototype.setVideoElement = function (video) {
+        this.video = video;
+    };
+    Stream.prototype.getRecvVideo = function () {
+        return this.recvVideo;
+    };
+    Stream.prototype.getRecvAudio = function () {
+        return this.recvAudio;
+    };
+    Stream.prototype.getSendVideo = function () {
+        return this.sendVideo;
+    };
+    Stream.prototype.getSendAudio = function () {
+        return this.sendAudio;
+    };
+    Stream.prototype.subscribeToMyRemote = function () {
+        this.showMyRemote = true;
+    };
+    Stream.prototype.displayMyRemote = function () {
+        return this.showMyRemote;
+    };
+    Stream.prototype.mirrorLocalStream = function (wr) {
+        this.showMyRemote = true;
+        this.localMirrored = true;
+        if (wr) {
+            this.wrStream = wr;
+            this.emitSrcEvent(this.wrStream);
+        }
+    };
+    Stream.prototype.isLocalMirrored = function () {
+        return this.localMirrored;
+    };
+    Stream.prototype.getChannelName = function () {
+        return this.getId() + '_' + this.chanId++;
+    };
+    Stream.prototype.isDataChannelEnabled = function () {
+        return this.dataChannel;
+    };
+    Stream.prototype.isDataChannelOpened = function () {
+        return this.dataChannelOpened;
+    };
+    Stream.prototype.onDataChannelOpen = function (event) {
+        console.debug('Data channel is opened');
+        this.dataChannelOpened = true;
+    };
+    Stream.prototype.onDataChannelClosed = function (event) {
+        console.debug('Data channel is closed');
+        this.dataChannelOpened = false;
+    };
+    Stream.prototype.sendData = function (data) {
+        if (this.wp === undefined) {
+            throw new Error('WebRTC peer has not been created yet');
+        }
+        if (!this.dataChannelOpened) {
+            throw new Error('Data channel is not opened');
+        }
+        console.info("Sending through data channel: " + data);
+        this.wp.send(data);
+    };
+    Stream.prototype.getWrStream = function () {
+        return this.wrStream;
+    };
+    Stream.prototype.getWebRtcPeer = function () {
+        return this.wp;
+    };
+    Stream.prototype.addEventListener = function (eventName, listener) {
+        this.ee.addListener(eventName, listener);
+    };
+    Stream.prototype.addOnceEventListener = function (eventName, listener) {
+        this.ee.addOnceListener(eventName, listener);
+    };
+    Stream.prototype.removeListener = function (eventName) {
+        this.ee.removeAllListeners(eventName);
+    };
+    Stream.prototype.showSpinner = function (spinnerParentId) {
+        var progress = document.createElement('div');
+        progress.id = 'progress-' + this.getId();
+        progress.style.background = "center transparent url('img/spinner.gif') no-repeat";
+        var spinnerParent = document.getElementById(spinnerParentId);
+        if (spinnerParent) {
+            spinnerParent.appendChild(progress);
+        }
+    };
+    Stream.prototype.hideSpinner = function (spinnerId) {
+        spinnerId = (spinnerId === undefined) ? this.getId() : spinnerId;
+        hide('progress-' + spinnerId);
+    };
+    Stream.prototype.playOnlyVideo = function (parentElement, thumbnailId) {
+        // TO-DO: check somehow if the stream is audio only, so the element created is <audio> instead of <video>
+        var _this = this;
+        this.video = document.createElement('video');
+        this.video.id = (this.local ? 'local-' : 'remote-') + 'video-' + this.getId();
+        this.video.autoplay = true;
+        this.video.controls = false;
+        this.video.srcObject = this.videoSrcObject;
+        this.videoElements.push({
+            thumb: thumbnailId,
+            video: this.video
+        });
+        if (this.local && !this.displayMyRemote()) {
+            this.video.muted = true;
+            this.video.onplaying = function () {
+                console.info("Local 'Stream' with id [" + _this.getId() + "] video is now playing");
+                _this.ee.emitEvent('video-is-playing', [{
+                        element: _this.video
+                    }]);
+            };
+        }
+        else {
+            this.video.title = this.getId();
+        }
+        if (typeof parentElement === "string") {
+            this.parentId = parentElement;
+            var parentElementDom = document.getElementById(parentElement);
+            if (parentElementDom) {
+                this.video = parentElementDom.appendChild(this.video);
+                this.ee.emitEvent('video-element-created-by-stream', [{
+                        element: this.video
+                    }]);
+                this.isVideoELementCreated = true;
+            }
+        }
+        else {
+            this.parentId = parentElement.id;
+            this.video = parentElement.appendChild(this.video);
+        }
+        this.isReady = true;
+        return this.video;
+    };
+    Stream.prototype.playThumbnail = function (thumbnailId) {
+        var container = document.createElement('div');
+        container.className = "participant";
+        container.id = this.getId();
+        var thumbnail = document.getElementById(thumbnailId);
+        if (thumbnail) {
+            thumbnail.appendChild(container);
+        }
+        this.elements.push(container);
+        var name = document.createElement('div');
+        container.appendChild(name);
+        var userName = this.getId().replace('_webcam', '');
+        if (userName.length >= 16) {
+            userName = userName.substring(0, 16) + "...";
+        }
+        name.appendChild(document.createTextNode(userName));
+        name.id = "name-" + this.getId();
+        name.className = "name";
+        name.title = this.getId();
+        this.showSpinner(thumbnailId);
+        return this.playOnlyVideo(container, thumbnailId);
+    };
+    Stream.prototype.getIdInParticipant = function () {
+        return this.id;
+    };
+    Stream.prototype.getParticipant = function () {
+        return this.connection;
+    };
+    Stream.prototype.getId = function () {
+        return this.connection.connectionId + "_" + this.id;
+    };
+    Stream.prototype.getRTCPeerConnection = function () {
+        return this.getWebRtcPeer().peerConnection;
+    };
+    Stream.prototype.requestCameraAccess = function (callback) {
+        var _this = this;
+        this.connection.addStream(this);
+        var constraints = this.mediaConstraints;
+        /*let constraints2 = {
+            audio: true,
+            video: {
+                width: {
+                    ideal: 1280
+                },
+                frameRate: {
+                    ideal: 15
+                }
+            }
+        };*/
+        this.userMediaHasVideo(function (hasVideo) {
+            if (!hasVideo) {
+                if (_this.sendVideo) {
+                    callback(new OpenViduError_1.OpenViduError(OpenViduError_1.OpenViduErrorName.NO_VIDEO_DEVICE, 'You have requested camera access but there is no video input device available. Trying to connect with an audio input device only'), _this);
+                }
+                if (!_this.sendAudio) {
+                    callback(new OpenViduError_1.OpenViduError(OpenViduError_1.OpenViduErrorName.NO_INPUT_DEVICE, 'You must init Publisher object with audio or video streams enabled'), undefined);
+                }
+                else {
+                    constraints.video = false;
+                    _this.sendVideo = false;
+                    _this.requestCameraAccesAux(constraints, callback);
+                }
+            }
+            else {
+                _this.requestCameraAccesAux(constraints, callback);
+            }
+        });
+    };
+    Stream.prototype.requestCameraAccesAux = function (constraints, callback) {
+        var _this = this;
+        navigator.mediaDevices.getUserMedia(constraints)
+            .then(function (userStream) {
+            _this.cameraAccessSuccess(userStream, callback);
+        })
+            .catch(function (error) {
+            _this.accessIsDenied = true;
+            _this.accessIsAllowed = false;
+            var errorName;
+            var errorMessage = error.toString();
+            ;
+            if (!_this.isScreenRequested) {
+                errorName = _this.sendVideo ? OpenViduError_1.OpenViduErrorName.CAMERA_ACCESS_DENIED : OpenViduError_1.OpenViduErrorName.MICROPHONE_ACCESS_DENIED;
+            }
+            else {
+                errorName = OpenViduError_1.OpenViduErrorName.SCREEN_CAPTURE_DENIED; // This code is only reachable for Firefox
+            }
+            callback(new OpenViduError_1.OpenViduError(errorName, errorMessage), undefined);
+        });
+    };
+    Stream.prototype.cameraAccessSuccess = function (userStream, callback) {
+        this.accessIsAllowed = true;
+        this.accessIsDenied = false;
+        this.ee.emitEvent('access-allowed-by-publisher');
+        if (userStream.getAudioTracks()[0] != null) {
+            userStream.getAudioTracks()[0].enabled = this.activeAudio;
+        }
+        if (userStream.getVideoTracks()[0] != null) {
+            userStream.getVideoTracks()[0].enabled = this.activeVideo;
+        }
+        this.wrStream = userStream;
+        this.emitSrcEvent(this.wrStream);
+        callback(undefined, this);
+    };
+    Stream.prototype.userMediaHasVideo = function (callback) {
+        // If the user is going to publish its screen there's a video source
+        if (this.isScreenRequested) {
+            callback(true);
+            return;
+        }
+        else {
+            // List all input devices and serach for a video kind
+            navigator.mediaDevices.enumerateDevices().then(function (mediaDevices) {
+                var videoInput = mediaDevices.filter(function (deviceInfo) {
+                    return deviceInfo.kind === 'videoinput';
+                })[0];
+                callback(videoInput != null);
+            });
+        }
+    };
+    Stream.prototype.publishVideoCallback = function (error, sdpOfferParam, wp) {
+        var _this = this;
+        if (error) {
+            return console.error("(publish) SDP offer error: "
+                + JSON.stringify(error));
+        }
+        console.debug("Sending SDP offer to publish as "
+            + this.getId(), sdpOfferParam);
+        this.openVidu.sendRequest("publishVideo", {
+            sdpOffer: sdpOfferParam,
+            doLoopback: this.displayMyRemote() || false,
+            audioActive: this.sendAudio,
+            videoActive: this.sendVideo
+        }, function (error, response) {
+            if (error) {
+                console.error("Error on publishVideo: " + JSON.stringify(error));
+            }
+            else {
+                _this.processSdpAnswer(response.sdpAnswer);
+                console.info("'Publisher' succesfully published to session");
+            }
+        });
+    };
+    Stream.prototype.startVideoCallback = function (error, sdpOfferParam, wp) {
+        var _this = this;
+        if (error) {
+            return console.error("(subscribe) SDP offer error: "
+                + JSON.stringify(error));
+        }
+        console.debug("Sending SDP offer to subscribe to "
+            + this.getId(), sdpOfferParam);
+        this.openVidu.sendRequest("receiveVideoFrom", {
+            sender: this.getId(),
+            sdpOffer: sdpOfferParam
+        }, function (error, response) {
+            if (error) {
+                console.error("Error on recvVideoFrom: " + JSON.stringify(error));
+            }
+            else {
+                _this.processSdpAnswer(response.sdpAnswer);
+            }
+        });
+    };
+    Stream.prototype.initWebRtcPeer = function (sdpOfferCallback) {
+        var _this = this;
+        if (this.local) {
+            var userMediaConstraints = {
+                audio: this.sendAudio,
+                video: this.sendVideo
+            };
+            var options = {
+                videoStream: this.wrStream,
+                mediaConstraints: userMediaConstraints,
+                onicecandidate: this.connection.sendIceCandidate.bind(this.connection),
+            };
+            if (this.dataChannel) {
+                options.dataChannelConfig = {
+                    id: this.getChannelName(),
+                    onopen: this.onDataChannelOpen,
+                    onclose: this.onDataChannelClosed
+                };
+                options.dataChannels = true;
+            }
+            if (this.displayMyRemote()) {
+                this.wp = kurentoUtils.WebRtcPeer.WebRtcPeerSendrecv(options, function (error) {
+                    if (error) {
+                        return console.error(error);
+                    }
+                    _this.wp.generateOffer(sdpOfferCallback.bind(_this));
+                });
+            }
+            else {
+                this.wp = kurentoUtils.WebRtcPeer.WebRtcPeerSendonly(options, function (error) {
+                    if (error) {
+                        return console.error(error);
+                    }
+                    _this.wp.generateOffer(sdpOfferCallback.bind(_this));
+                });
+            }
+        }
+        else {
+            var offerConstraints = {
+                audio: this.recvAudio,
+                video: this.recvVideo
+            };
+            console.debug("'Session.subscribe(Stream)' called. Constraints of generate SDP offer", offerConstraints);
+            var options = {
+                onicecandidate: this.connection.sendIceCandidate.bind(this.connection),
+                mediaConstraints: offerConstraints
+            };
+            this.wp = kurentoUtils.WebRtcPeer.WebRtcPeerRecvonly(options, function (error) {
+                if (error) {
+                    return console.error(error);
+                }
+                _this.wp.generateOffer(sdpOfferCallback.bind(_this));
+            });
+        }
+        console.debug("Waiting for SDP offer to be generated ("
+            + (this.local ? "local" : "remote") + " 'Stream': " + this.getId() + ")");
+    };
+    Stream.prototype.publish = function () {
+        var _this = this;
+        // FIXME: Throw error when stream is not local
+        if (this.isReady) {
+            this.initWebRtcPeer(this.publishVideoCallback);
+        }
+        else {
+            this.ee.once('stream-ready', function (streamEvent) {
+                _this.publish();
+            });
+        }
+        // FIXME: Now we have coupled connecting to a room and adding a
+        // stream to this room. But in the new API, there are two steps.
+        // This is the second step. For now, it do nothing.
+    };
+    Stream.prototype.subscribe = function () {
+        // FIXME: In the current implementation all participants are subscribed
+        // automatically to all other participants. We use this method only to
+        // negotiate SDP
+        this.initWebRtcPeer(this.startVideoCallback);
+    };
+    Stream.prototype.processSdpAnswer = function (sdpAnswer) {
+        var _this = this;
+        var answer = new RTCSessionDescription({
+            type: 'answer',
+            sdp: sdpAnswer,
+        });
+        console.debug(this.getId() + ": set peer connection with recvd SDP answer", sdpAnswer);
+        var participantId = this.getId();
+        var pc = this.wp.peerConnection;
+        pc.setRemoteDescription(answer, function () {
+            // Avoids to subscribe to your own stream remotely 
+            // except when showMyRemote is true
+            if (!_this.local || _this.displayMyRemote()) {
+                _this.wrStream = pc.getRemoteStreams()[0];
+                console.debug("Peer remote stream", _this.wrStream);
+                if (_this.wrStream != undefined) {
+                    _this.emitSrcEvent(_this.wrStream);
+                    if (_this.wrStream.getAudioTracks()[0] != null) {
+                        _this.speechEvent = kurentoUtils.WebRtcPeer.hark(_this.wrStream, { threshold: _this.room.thresholdSpeaker });
+                        _this.speechEvent.on('speaking', function () {
+                            _this.room.addParticipantSpeaking(participantId);
+                            _this.room.emitEvent('stream-speaking', [{
+                                    participantId: participantId
+                                }]);
+                        });
+                        _this.speechEvent.on('stopped_speaking', function () {
+                            _this.room.removeParticipantSpeaking(participantId);
+                            _this.room.emitEvent('stream-stopped-speaking', [{
+                                    participantId: participantId
+                                }]);
+                        });
+                    }
+                }
+                for (var _i = 0, _a = _this.videoElements; _i < _a.length; _i++) {
+                    var videoElement = _a[_i];
+                    var thumbnailId = videoElement.thumb;
+                    var video = videoElement.video;
+                    video.srcObject = _this.wrStream;
+                    video.onplaying = function () {
+                        if (_this.local && _this.displayMyRemote()) {
+                            console.info("Your own remote 'Stream' with id [" + _this.getId() + "] video is now playing");
+                            _this.ee.emitEvent('remote-video-is-playing', [{
+                                    element: _this.video
+                                }]);
+                        }
+                        else if (!_this.local && !_this.displayMyRemote()) {
+                            console.info("Remote 'Stream' with id [" + _this.getId() + "] video is now playing");
+                            _this.ee.emitEvent('video-is-playing', [{
+                                    element: _this.video
+                                }]);
+                        }
+                        //show(thumbnailId);
+                        //this.hideSpinner(this.getId());
+                    };
+                }
+                _this.room.emitEvent('stream-subscribed', [{
+                        stream: _this
+                    }]);
+            }
+        }, function (error) {
+            console.error(_this.getId() + ": Error setting SDP to the peer connection: "
+                + JSON.stringify(error));
+        });
+    };
+    Stream.prototype.unpublish = function () {
+        if (this.wp) {
+            this.wp.dispose();
+        }
+        else {
+            if (this.wrStream) {
+                this.wrStream.getAudioTracks().forEach(function (track) {
+                    track.stop && track.stop();
+                });
+                this.wrStream.getVideoTracks().forEach(function (track) {
+                    track.stop && track.stop();
+                });
+            }
+        }
+        if (this.speechEvent) {
+            this.speechEvent.stop();
+        }
+        console.info(this.getId() + ": Stream '" + this.id + "' unpublished");
+    };
+    Stream.prototype.dispose = function () {
+        function disposeElement(element) {
+            if (element && element.parentNode) {
+                element.parentNode.removeChild(element);
+            }
+        }
+        this.elements.forEach(function (e) { return disposeElement(e); });
+        //this.videoElements.forEach(ve => disposeElement(ve.video));
+        disposeElement("progress-" + this.getId());
+        if (this.wp) {
+            this.wp.dispose();
+        }
+        else {
+            if (this.wrStream) {
+                this.wrStream.getAudioTracks().forEach(function (track) {
+                    track.stop && track.stop();
+                });
+                this.wrStream.getVideoTracks().forEach(function (track) {
+                    track.stop && track.stop();
+                });
+            }
+        }
+        if (this.speechEvent) {
+            this.speechEvent.stop();
+        }
+        console.info((this.local ? "Local " : "Remote ") + "'Stream' with id [" + this.getId() + "]' has been succesfully disposed");
+    };
+    Stream.prototype.configureOptions = function (options) {
+        if (options.id) {
+            this.id = options.id;
+        }
+        else {
+            this.id = "webcam";
+        }
+        this.connection = options.connection;
+        this.recvVideo = options.recvVideo || false;
+        this.recvAudio = options.recvAudio || false;
+        this.sendVideo = options.sendVideo;
+        this.sendAudio = options.sendAudio;
+        this.activeAudio = options.activeAudio;
+        this.activeVideo = options.activeVideo;
+        this.dataChannel = options.data || false;
+        this.mediaConstraints = options.mediaConstraints;
+    };
+    Stream.prototype.configureScreenOptions = function (options) {
+        if (options.id) {
+            this.id = options.id;
+        }
+        else {
+            this.id = "screen";
+        }
+        this.recvVideo = options.recvVideo || false;
+        this.recvAudio = options.recvAudio || false;
+        this.sendVideo = options.sendVideo;
+        this.sendAudio = options.sendAudio;
+        this.activeAudio = options.activeAudio;
+        this.activeVideo = options.activeVideo;
+        this.dataChannel = options.data || false;
+        this.mediaConstraints = options.mediaConstraints;
+        this.ee.emitEvent('can-request-screen');
+    };
+    return Stream;
+}());
+exports.Stream = Stream;
+//# sourceMappingURL=Stream.js.map
+
+/***/ }),
+/* 65 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -29435,7 +30072,7 @@ exports.ScalarObservable = ScalarObservable;
 //# sourceMappingURL=ScalarObservable.js.map
 
 /***/ }),
-/* 64 */
+/* 66 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -29533,7 +30170,7 @@ var FilterSubscriber = (function (_super) {
 //# sourceMappingURL=filter.js.map
 
 /***/ }),
-/* 65 */
+/* 67 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -29577,7 +30214,7 @@ exports.$$iterator = exports.iterator;
 //# sourceMappingURL=iterator.js.map
 
 /***/ }),
-/* 66 */
+/* 68 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -29609,7 +30246,7 @@ exports.$$observable = exports.observable;
 //# sourceMappingURL=observable.js.map
 
 /***/ }),
-/* 67 */
+/* 69 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -29625,7 +30262,7 @@ exports.$$rxSubscriber = exports.rxSubscriber;
 //# sourceMappingURL=rxSubscriber.js.map
 
 /***/ }),
-/* 68 */
+/* 70 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -29659,7 +30296,7 @@ exports.EmptyError = EmptyError;
 //# sourceMappingURL=EmptyError.js.map
 
 /***/ }),
-/* 69 */
+/* 71 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -29669,7 +30306,7 @@ exports.errorObject = { e: {} };
 //# sourceMappingURL=errorObject.js.map
 
 /***/ }),
-/* 70 */
+/* 72 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -29678,7 +30315,7 @@ exports.isArray = Array.isArray || (function (x) { return x && typeof x.length =
 //# sourceMappingURL=isArray.js.map
 
 /***/ }),
-/* 71 */
+/* 73 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -29690,16 +30327,15 @@ exports.isFunction = isFunction;
 //# sourceMappingURL=isFunction.js.map
 
 /***/ }),
-/* 72 */,
-/* 73 */
+/* 74 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_tslib__ = __webpack_require__(6);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_core__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_rxjs_observable_forkJoin__ = __webpack_require__(96);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_rxjs_observable_forkJoin__ = __webpack_require__(103);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_rxjs_observable_forkJoin___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_rxjs_observable_forkJoin__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_rxjs_observable_fromPromise__ = __webpack_require__(97);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_rxjs_observable_fromPromise__ = __webpack_require__(104);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_rxjs_observable_fromPromise___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3_rxjs_observable_fromPromise__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_rxjs_operator_map__ = __webpack_require__(39);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_rxjs_operator_map___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_4_rxjs_operator_map__);
@@ -29777,7 +30413,7 @@ exports.isFunction = isFunction;
 /* unused harmony export ɵr */
 
 /**
- * @license Angular v4.4.3
+ * @license Angular v4.4.4
  * (c) 2010-2017 Google, Inc. https://angular.io/
  * License: MIT
  */
@@ -35702,7 +36338,7 @@ FormBuilder.ctorParameters = function () { return []; };
 /**
  * \@stable
  */
-var VERSION = new __WEBPACK_IMPORTED_MODULE_1__angular_core__["d" /* Version */]('4.4.3');
+var VERSION = new __WEBPACK_IMPORTED_MODULE_1__angular_core__["d" /* Version */]('4.4.4');
 /**
  * @license
  * Copyright Google Inc. All Rights Reserved.
@@ -35870,7 +36506,7 @@ ReactiveFormsModule.ctorParameters = function () { return []; };
 
 
 /***/ }),
-/* 74 */
+/* 75 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -35914,7 +36550,7 @@ ReactiveFormsModule.ctorParameters = function () { return []; };
 /* unused harmony export ɵd */
 
 /**
- * @license Angular v4.4.3
+ * @license Angular v4.4.4
  * (c) 2010-2017 Google, Inc. https://angular.io/
  * License: MIT
  */
@@ -38069,7 +38705,7 @@ JsonpModule.ctorParameters = function () { return []; };
 /**
  * \@stable
  */
-var VERSION = new __WEBPACK_IMPORTED_MODULE_1__angular_core__["d" /* Version */]('4.4.3');
+var VERSION = new __WEBPACK_IMPORTED_MODULE_1__angular_core__["d" /* Version */]('4.4.4');
 /**
  * @license
  * Copyright Google Inc. All Rights Reserved.
@@ -38098,7 +38734,7 @@ var VERSION = new __WEBPACK_IMPORTED_MODULE_1__angular_core__["d" /* Version */]
 
 
 /***/ }),
-/* 75 */
+/* 76 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -38107,47 +38743,47 @@ var VERSION = new __WEBPACK_IMPORTED_MODULE_1__angular_core__["d" /* Version */]
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__angular_platform_browser__ = __webpack_require__(13);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_rxjs_Subject__ = __webpack_require__(20);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_rxjs_Subject___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3_rxjs_Subject__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_rxjs_add_operator_debounceTime__ = __webpack_require__(213);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_rxjs_add_operator_debounceTime__ = __webpack_require__(228);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_rxjs_add_operator_debounceTime___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_4_rxjs_add_operator_debounceTime__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__angular_common__ = __webpack_require__(24);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_rxjs_Observable__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_rxjs_Observable___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_6_rxjs_Observable__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_7_rxjs_Subscription__ = __webpack_require__(15);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_7_rxjs_Subscription___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_7_rxjs_Subscription__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8_rxjs_add_observable_fromEvent__ = __webpack_require__(207);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8_rxjs_add_observable_fromEvent__ = __webpack_require__(222);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_8_rxjs_add_observable_fromEvent___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_8_rxjs_add_observable_fromEvent__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9_rxjs_add_observable_merge__ = __webpack_require__(208);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9_rxjs_add_observable_merge__ = __webpack_require__(223);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_9_rxjs_add_observable_merge___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_9_rxjs_add_observable_merge__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10_rxjs_add_operator_auditTime__ = __webpack_require__(211);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10_rxjs_add_operator_auditTime__ = __webpack_require__(226);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_10_rxjs_add_operator_auditTime___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_10_rxjs_add_operator_auditTime__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11_rxjs_add_operator_first__ = __webpack_require__(217);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11_rxjs_add_operator_first__ = __webpack_require__(232);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_11_rxjs_add_operator_first___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_11_rxjs_add_operator_first__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12_rxjs_add_observable_of__ = __webpack_require__(209);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12_rxjs_add_observable_of__ = __webpack_require__(224);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_12_rxjs_add_observable_of___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_12_rxjs_add_observable_of__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_13__angular_forms__ = __webpack_require__(73);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_13__angular_forms__ = __webpack_require__(74);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_14__angular_animations__ = __webpack_require__(42);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_15_rxjs_add_operator_startWith__ = __webpack_require__(220);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_15_rxjs_add_operator_startWith__ = __webpack_require__(235);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_15_rxjs_add_operator_startWith___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_15_rxjs_add_operator_startWith__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_16_rxjs_add_operator_filter__ = __webpack_require__(215);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_16_rxjs_add_operator_filter__ = __webpack_require__(230);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_16_rxjs_add_operator_filter___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_16_rxjs_add_operator_filter__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_17__angular_http__ = __webpack_require__(74);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_18_rxjs_add_observable_forkJoin__ = __webpack_require__(206);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_17__angular_http__ = __webpack_require__(75);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_18_rxjs_add_observable_forkJoin__ = __webpack_require__(221);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_18_rxjs_add_observable_forkJoin___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_18_rxjs_add_observable_forkJoin__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_19_rxjs_add_operator_map__ = __webpack_require__(218);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_19_rxjs_add_operator_map__ = __webpack_require__(233);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_19_rxjs_add_operator_map___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_19_rxjs_add_operator_map__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_20_rxjs_add_operator_do__ = __webpack_require__(214);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_20_rxjs_add_operator_do__ = __webpack_require__(229);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_20_rxjs_add_operator_do___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_20_rxjs_add_operator_do__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_21_rxjs_add_operator_share__ = __webpack_require__(219);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_21_rxjs_add_operator_share__ = __webpack_require__(234);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_21_rxjs_add_operator_share___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_21_rxjs_add_operator_share__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_22_rxjs_add_operator_finally__ = __webpack_require__(216);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_22_rxjs_add_operator_finally__ = __webpack_require__(231);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_22_rxjs_add_operator_finally___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_22_rxjs_add_operator_finally__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_23_rxjs_add_operator_catch__ = __webpack_require__(212);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_23_rxjs_add_operator_catch__ = __webpack_require__(227);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_23_rxjs_add_operator_catch___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_23_rxjs_add_operator_catch__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_24_rxjs_add_observable_throw__ = __webpack_require__(210);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_24_rxjs_add_observable_throw__ = __webpack_require__(225);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_24_rxjs_add_observable_throw___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_24_rxjs_add_observable_throw__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_25_rxjs_add_operator_takeUntil__ = __webpack_require__(222);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_25_rxjs_add_operator_takeUntil__ = __webpack_require__(237);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_25_rxjs_add_operator_takeUntil___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_25_rxjs_add_operator_takeUntil__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_26_rxjs_add_operator_switchMap__ = __webpack_require__(221);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_26_rxjs_add_operator_switchMap__ = __webpack_require__(236);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_26_rxjs_add_operator_switchMap___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_26_rxjs_add_operator_switchMap__);
 /* unused harmony export Dir */
 /* unused harmony export RtlModule */
@@ -61013,7 +61649,6 @@ MaterialModule.ctorParameters = function () { return []; };
 
 
 /***/ }),
-/* 76 */,
 /* 77 */,
 /* 78 */,
 /* 79 */,
@@ -61028,7 +61663,8 @@ MaterialModule.ctorParameters = function () { return []; };
 /* 88 */,
 /* 89 */,
 /* 90 */,
-/* 91 */
+/* 91 */,
+/* 92 */
 /***/ (function(module, exports) {
 
 // Copyright Joyent, Inc. and other Node contributors.
@@ -61336,7 +61972,7 @@ function isUndefined(arg) {
 
 
 /***/ }),
-/* 92 */
+/* 93 */
 /***/ (function(module, exports) {
 
 if (typeof Object.create === 'function') {
@@ -61365,7 +62001,1238 @@ if (typeof Object.create === 'function') {
 
 
 /***/ }),
-/* 93 */
+/* 94 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+/* WEBPACK VAR INJECTION */(function(global) {/*
+ * (C) Copyright 2013-2015 Kurento (http://kurento.org/)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+var BrowserWebSocket = global.WebSocket || global.MozWebSocket;
+var Logger = console;
+/**
+ * Get either the `WebSocket` or `MozWebSocket` globals
+ * in the browser or try to resolve WebSocket-compatible
+ * interface exposed by `ws` for Node-like environment.
+ */
+/*var WebSocket = BrowserWebSocket;
+if (!WebSocket && typeof window === 'undefined') {
+    try {
+        WebSocket = require('ws');
+    } catch (e) { }
+}*/
+//var SockJS = require('sockjs-client');
+var MAX_RETRIES = 2000; // Forever...
+var RETRY_TIME_MS = 3000; // FIXME: Implement exponential wait times...
+var CONNECTING = 0;
+var OPEN = 1;
+var CLOSING = 2;
+var CLOSED = 3;
+/*
+config = {
+        uri : wsUri,
+        useSockJS : true (use SockJS) / false (use WebSocket) by default,
+        onconnected : callback method to invoke when connection is successful,
+        ondisconnect : callback method to invoke when the connection is lost,
+        onreconnecting : callback method to invoke when the client is reconnecting,
+        onreconnected : callback method to invoke when the client succesfully reconnects,
+    };
+*/
+function WebSocketWithReconnection(config) {
+    var closing = false;
+    var registerMessageHandler;
+    var wsUri = config.uri;
+    var useSockJS = config.useSockJS;
+    var reconnecting = false;
+    var forcingDisconnection = false;
+    var ws;
+    if (useSockJS) {
+        ws = new SockJS(wsUri);
+    }
+    else {
+        ws = new WebSocket(wsUri);
+    }
+    ws.onopen = function () {
+        logConnected(ws, wsUri);
+        if (config.onconnected) {
+            config.onconnected();
+        }
+    };
+    ws.onerror = function (error) {
+        Logger.error("Could not connect to " + wsUri + " (invoking onerror if defined)", error);
+        if (config.onerror) {
+            config.onerror(error);
+        }
+    };
+    function logConnected(ws, wsUri) {
+        try {
+            Logger.debug("WebSocket connected to " + wsUri);
+        }
+        catch (e) {
+            Logger.error(e);
+        }
+    }
+    var reconnectionOnClose = function () {
+        if (ws.readyState === CLOSED) {
+            if (closing) {
+                Logger.debug("Connection closed by user");
+            }
+            else {
+                Logger.debug("Connection closed unexpectecly. Reconnecting...");
+                reconnectToSameUri(MAX_RETRIES, 1);
+            }
+        }
+        else {
+            Logger.debug("Close callback from previous websocket. Ignoring it");
+        }
+    };
+    ws.onclose = reconnectionOnClose;
+    function reconnectToSameUri(maxRetries, numRetries) {
+        Logger.debug("reconnectToSameUri (attempt #" + numRetries + ", max=" + maxRetries + ")");
+        if (numRetries === 1) {
+            if (reconnecting) {
+                Logger.warn("Trying to reconnectToNewUri when reconnecting... Ignoring this reconnection.");
+                return;
+            }
+            else {
+                reconnecting = true;
+            }
+            if (config.onreconnecting) {
+                config.onreconnecting();
+            }
+        }
+        if (forcingDisconnection) {
+            reconnectToNewUri(maxRetries, numRetries, wsUri);
+        }
+        else {
+            if (config.newWsUriOnReconnection) {
+                config.newWsUriOnReconnection(function (error, newWsUri) {
+                    if (error) {
+                        Logger.debug(error);
+                        setTimeout(function () {
+                            reconnectToSameUri(maxRetries, numRetries + 1);
+                        }, RETRY_TIME_MS);
+                    }
+                    else {
+                        reconnectToNewUri(maxRetries, numRetries, newWsUri);
+                    }
+                });
+            }
+            else {
+                reconnectToNewUri(maxRetries, numRetries, wsUri);
+            }
+        }
+    }
+    // TODO Test retries. How to force not connection?
+    function reconnectToNewUri(maxRetries, numRetries, reconnectWsUri) {
+        Logger.debug("Reconnection attempt #" + numRetries);
+        ws.close();
+        wsUri = reconnectWsUri || wsUri;
+        var newWs;
+        if (useSockJS) {
+            newWs = new SockJS(wsUri);
+        }
+        else {
+            newWs = new WebSocket(wsUri);
+        }
+        newWs.onopen = function () {
+            Logger.debug("Reconnected after " + numRetries + " attempts...");
+            logConnected(newWs, wsUri);
+            reconnecting = false;
+            registerMessageHandler();
+            if (config.onreconnected()) {
+                config.onreconnected();
+            }
+            newWs.onclose = reconnectionOnClose;
+        };
+        var onErrorOrClose = function (error) {
+            Logger.warn("Reconnection error: ", error);
+            if (numRetries === maxRetries) {
+                if (config.ondisconnect) {
+                    config.ondisconnect();
+                }
+            }
+            else {
+                setTimeout(function () {
+                    reconnectToSameUri(maxRetries, numRetries + 1);
+                }, RETRY_TIME_MS);
+            }
+        };
+        newWs.onerror = onErrorOrClose;
+        ws = newWs;
+    }
+    this.close = function () {
+        closing = true;
+        ws.close();
+    };
+    // This method is only for testing
+    this.forceClose = function (millis) {
+        Logger.debug("Testing: Force WebSocket close");
+        if (millis) {
+            Logger.debug("Testing: Change wsUri for " + millis + " millis to simulate net failure");
+            var goodWsUri = wsUri;
+            wsUri = "wss://21.234.12.34.4:443/";
+            forcingDisconnection = true;
+            setTimeout(function () {
+                Logger.debug("Testing: Recover good wsUri " + goodWsUri);
+                wsUri = goodWsUri;
+                forcingDisconnection = false;
+            }, millis);
+        }
+        ws.close();
+    };
+    this.reconnectWs = function () {
+        Logger.debug("reconnectWs");
+        reconnectToSameUri(MAX_RETRIES, 1, wsUri);
+    };
+    this.send = function (message) {
+        ws.send(message);
+    };
+    this.addEventListener = function (type, callback) {
+        registerMessageHandler = function () {
+            ws.addEventListener(type, callback);
+        };
+        registerMessageHandler();
+    };
+}
+module.exports = WebSocketWithReconnection;
+//# sourceMappingURL=webSocketWithReconnection.js.map
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(9)))
+
+/***/ }),
+/* 95 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/*
+ * (C) Copyright 2014 Kurento (http://kurento.org/)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+var defineProperty_IE8 = false;
+if (Object.defineProperty) {
+    try {
+        Object.defineProperty({}, "x", {});
+    }
+    catch (e) {
+        defineProperty_IE8 = true;
+    }
+}
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/bind
+if (!Function.prototype.bind) {
+    Function.prototype.bind = function (oThis) {
+        if (typeof this !== 'function') {
+            // closest thing possible to the ECMAScript 5
+            // internal IsCallable function
+            throw new TypeError('Function.prototype.bind - what is trying to be bound is not callable');
+        }
+        var aArgs = Array.prototype.slice.call(arguments, 1), fToBind = this, fNOP = function () { }, fBound = function () {
+            return fToBind.apply(this instanceof fNOP && oThis
+                ? this
+                : oThis, aArgs.concat(Array.prototype.slice.call(arguments)));
+        };
+        fNOP.prototype = this.prototype;
+        fBound.prototype = new fNOP();
+        return fBound;
+    };
+}
+var EventEmitter = __webpack_require__(92).EventEmitter;
+var inherits = __webpack_require__(93);
+var packers = __webpack_require__(205);
+var Mapper = __webpack_require__(199);
+var BASE_TIMEOUT = 5000;
+function unifyResponseMethods(responseMethods) {
+    if (!responseMethods)
+        return {};
+    for (var key in responseMethods) {
+        var value = responseMethods[key];
+        if (typeof value == 'string')
+            responseMethods[key] =
+                {
+                    response: value
+                };
+    }
+    ;
+    return responseMethods;
+}
+;
+function unifyTransport(transport) {
+    if (!transport)
+        return;
+    // Transport as a function
+    if (transport instanceof Function)
+        return { send: transport };
+    // WebSocket & DataChannel
+    if (transport.send instanceof Function)
+        return transport;
+    // Message API (Inter-window & WebWorker)
+    if (transport.postMessage instanceof Function) {
+        transport.send = transport.postMessage;
+        return transport;
+    }
+    // Stream API
+    if (transport.write instanceof Function) {
+        transport.send = transport.write;
+        return transport;
+    }
+    // Transports that only can receive messages, but not send
+    if (transport.onmessage !== undefined)
+        return;
+    if (transport.pause instanceof Function)
+        return;
+    throw new SyntaxError("Transport is not a function nor a valid object");
+}
+;
+/**
+ * Representation of a RPC notification
+ *
+ * @class
+ *
+ * @constructor
+ *
+ * @param {String} method -method of the notification
+ * @param params - parameters of the notification
+ */
+function RpcNotification(method, params) {
+    if (defineProperty_IE8) {
+        this.method = method;
+        this.params = params;
+    }
+    else {
+        Object.defineProperty(this, 'method', { value: method, enumerable: true });
+        Object.defineProperty(this, 'params', { value: params, enumerable: true });
+    }
+}
+;
+/**
+ * @class
+ *
+ * @constructor
+ *
+ * @param {object} packer
+ *
+ * @param {object} [options]
+ *
+ * @param {object} [transport]
+ *
+ * @param {Function} [onRequest]
+ */
+function RpcBuilder(packer, options, transport, onRequest) {
+    var self = this;
+    if (!packer)
+        throw new SyntaxError('Packer is not defined');
+    if (!packer.pack || !packer.unpack)
+        throw new SyntaxError('Packer is invalid');
+    var responseMethods = unifyResponseMethods(packer.responseMethods);
+    if (options instanceof Function) {
+        if (transport != undefined)
+            throw new SyntaxError("There can't be parameters after onRequest");
+        onRequest = options;
+        transport = undefined;
+        options = undefined;
+    }
+    ;
+    if (options && options.send instanceof Function) {
+        if (transport && !(transport instanceof Function))
+            throw new SyntaxError("Only a function can be after transport");
+        onRequest = transport;
+        transport = options;
+        options = undefined;
+    }
+    ;
+    if (transport instanceof Function) {
+        if (onRequest != undefined)
+            throw new SyntaxError("There can't be parameters after onRequest");
+        onRequest = transport;
+        transport = undefined;
+    }
+    ;
+    if (transport && transport.send instanceof Function)
+        if (onRequest && !(onRequest instanceof Function))
+            throw new SyntaxError("Only a function can be after transport");
+    options = options || {};
+    EventEmitter.call(this);
+    if (onRequest)
+        this.on('request', onRequest);
+    if (defineProperty_IE8)
+        this.peerID = options.peerID;
+    else
+        Object.defineProperty(this, 'peerID', { value: options.peerID });
+    var max_retries = options.max_retries || 0;
+    function transportMessage(event) {
+        self.decode(event.data || event);
+    }
+    ;
+    this.getTransport = function () {
+        return transport;
+    };
+    this.setTransport = function (value) {
+        // Remove listener from old transport
+        if (transport) {
+            // W3C transports
+            if (transport.removeEventListener)
+                transport.removeEventListener('message', transportMessage);
+            else if (transport.removeListener)
+                transport.removeListener('data', transportMessage);
+        }
+        ;
+        // Set listener on new transport
+        if (value) {
+            // W3C transports
+            if (value.addEventListener)
+                value.addEventListener('message', transportMessage);
+            else if (value.addListener)
+                value.addListener('data', transportMessage);
+        }
+        ;
+        transport = unifyTransport(value);
+    };
+    if (!defineProperty_IE8)
+        Object.defineProperty(this, 'transport', {
+            get: this.getTransport.bind(this),
+            set: this.setTransport.bind(this)
+        });
+    this.setTransport(transport);
+    var request_timeout = options.request_timeout || BASE_TIMEOUT;
+    var ping_request_timeout = options.ping_request_timeout || request_timeout;
+    var response_timeout = options.response_timeout || BASE_TIMEOUT;
+    var duplicates_timeout = options.duplicates_timeout || BASE_TIMEOUT;
+    var requestID = 0;
+    var requests = new Mapper();
+    var responses = new Mapper();
+    var processedResponses = new Mapper();
+    var message2Key = {};
+    /**
+     * Store the response to prevent to process duplicate request later
+     */
+    function storeResponse(message, id, dest) {
+        var response = {
+            message: message,
+            /** Timeout to auto-clean old responses */
+            timeout: setTimeout(function () {
+                responses.remove(id, dest);
+            }, response_timeout)
+        };
+        responses.set(response, id, dest);
+    }
+    ;
+    /**
+     * Store the response to ignore duplicated messages later
+     */
+    function storeProcessedResponse(ack, from) {
+        var timeout = setTimeout(function () {
+            processedResponses.remove(ack, from);
+        }, duplicates_timeout);
+        processedResponses.set(timeout, ack, from);
+    }
+    ;
+    /**
+     * Representation of a RPC request
+     *
+     * @class
+     * @extends RpcNotification
+     *
+     * @constructor
+     *
+     * @param {String} method -method of the notification
+     * @param params - parameters of the notification
+     * @param {Integer} id - identifier of the request
+     * @param [from] - source of the notification
+     */
+    function RpcRequest(method, params, id, from, transport) {
+        RpcNotification.call(this, method, params);
+        this.getTransport = function () {
+            return transport;
+        };
+        this.setTransport = function (value) {
+            transport = unifyTransport(value);
+        };
+        if (!defineProperty_IE8)
+            Object.defineProperty(this, 'transport', {
+                get: this.getTransport.bind(this),
+                set: this.setTransport.bind(this)
+            });
+        var response = responses.get(id, from);
+        /**
+         * @constant {Boolean} duplicated
+         */
+        if (!(transport || self.getTransport())) {
+            if (defineProperty_IE8)
+                this.duplicated = Boolean(response);
+            else
+                Object.defineProperty(this, 'duplicated', {
+                    value: Boolean(response)
+                });
+        }
+        var responseMethod = responseMethods[method];
+        this.pack = packer.pack.bind(packer, this, id);
+        /**
+         * Generate a response to this request
+         *
+         * @param {Error} [error]
+         * @param {*} [result]
+         *
+         * @returns {string}
+         */
+        this.reply = function (error, result, transport) {
+            // Fix optional parameters
+            if (error instanceof Function || error && error.send instanceof Function) {
+                if (result != undefined)
+                    throw new SyntaxError("There can't be parameters after callback");
+                transport = error;
+                result = null;
+                error = undefined;
+            }
+            else if (result instanceof Function
+                || result && result.send instanceof Function) {
+                if (transport != undefined)
+                    throw new SyntaxError("There can't be parameters after callback");
+                transport = result;
+                result = null;
+            }
+            ;
+            transport = unifyTransport(transport);
+            // Duplicated request, remove old response timeout
+            if (response)
+                clearTimeout(response.timeout);
+            if (from != undefined) {
+                if (error)
+                    error.dest = from;
+                if (result)
+                    result.dest = from;
+            }
+            ;
+            var message;
+            // New request or overriden one, create new response with provided data
+            if (error || result != undefined) {
+                if (self.peerID != undefined) {
+                    if (error)
+                        error.from = self.peerID;
+                    else
+                        result.from = self.peerID;
+                }
+                // Protocol indicates that responses has own request methods
+                if (responseMethod) {
+                    if (responseMethod.error == undefined && error)
+                        message =
+                            {
+                                error: error
+                            };
+                    else {
+                        var method = error
+                            ? responseMethod.error
+                            : responseMethod.response;
+                        message =
+                            {
+                                method: method,
+                                params: error || result
+                            };
+                    }
+                }
+                else
+                    message =
+                        {
+                            error: error,
+                            result: result
+                        };
+                message = packer.pack(message, id);
+            }
+            else if (response)
+                message = response.message;
+            else
+                message = packer.pack({ result: null }, id);
+            // Store the response to prevent to process a duplicated request later
+            storeResponse(message, id, from);
+            // Return the stored response so it can be directly send back
+            transport = transport || this.getTransport() || self.getTransport();
+            if (transport)
+                return transport.send(message);
+            return message;
+        };
+    }
+    ;
+    inherits(RpcRequest, RpcNotification);
+    function cancel(message) {
+        var key = message2Key[message];
+        if (!key)
+            return;
+        delete message2Key[message];
+        var request = requests.pop(key.id, key.dest);
+        if (!request)
+            return;
+        clearTimeout(request.timeout);
+        // Start duplicated responses timeout
+        storeProcessedResponse(key.id, key.dest);
+    }
+    ;
+    /**
+     * Allow to cancel a request and don't wait for a response
+     *
+     * If `message` is not given, cancel all the request
+     */
+    this.cancel = function (message) {
+        if (message)
+            return cancel(message);
+        for (var message in message2Key)
+            cancel(message);
+    };
+    this.close = function () {
+        // Prevent to receive new messages
+        var transport = this.getTransport();
+        if (transport && transport.close)
+            transport.close();
+        // Request & processed responses
+        this.cancel();
+        processedResponses.forEach(clearTimeout);
+        // Responses
+        responses.forEach(function (response) {
+            clearTimeout(response.timeout);
+        });
+    };
+    /**
+     * Generates and encode a JsonRPC 2.0 message
+     *
+     * @param {String} method -method of the notification
+     * @param params - parameters of the notification
+     * @param [dest] - destination of the notification
+     * @param {object} [transport] - transport where to send the message
+     * @param [callback] - function called when a response to this request is
+     *   received. If not defined, a notification will be send instead
+     *
+     * @returns {string} A raw JsonRPC 2.0 request or notification string
+     */
+    this.encode = function (method, params, dest, transport, callback) {
+        // Fix optional parameters
+        if (params instanceof Function) {
+            if (dest != undefined)
+                throw new SyntaxError("There can't be parameters after callback");
+            callback = params;
+            transport = undefined;
+            dest = undefined;
+            params = undefined;
+        }
+        else if (dest instanceof Function) {
+            if (transport != undefined)
+                throw new SyntaxError("There can't be parameters after callback");
+            callback = dest;
+            transport = undefined;
+            dest = undefined;
+        }
+        else if (transport instanceof Function) {
+            if (callback != undefined)
+                throw new SyntaxError("There can't be parameters after callback");
+            callback = transport;
+            transport = undefined;
+        }
+        ;
+        if (self.peerID != undefined) {
+            params = params || {};
+            params.from = self.peerID;
+        }
+        ;
+        if (dest != undefined) {
+            params = params || {};
+            params.dest = dest;
+        }
+        ;
+        // Encode message
+        var message = {
+            method: method,
+            params: params
+        };
+        if (callback) {
+            var id = requestID++;
+            var retried = 0;
+            message = packer.pack(message, id);
+            function dispatchCallback(error, result) {
+                self.cancel(message);
+                callback(error, result);
+            }
+            ;
+            var request = {
+                message: message,
+                callback: dispatchCallback,
+                responseMethods: responseMethods[method] || {}
+            };
+            var encode_transport = unifyTransport(transport);
+            function sendRequest(transport) {
+                var rt = (method === 'ping' ? ping_request_timeout : request_timeout);
+                request.timeout = setTimeout(timeout, rt * Math.pow(2, retried++));
+                message2Key[message] = { id: id, dest: dest };
+                requests.set(request, id, dest);
+                transport = transport || encode_transport || self.getTransport();
+                if (transport)
+                    return transport.send(message);
+                return message;
+            }
+            ;
+            function retry(transport) {
+                transport = unifyTransport(transport);
+                console.warn(retried + ' retry for request message:', message);
+                var timeout = processedResponses.pop(id, dest);
+                clearTimeout(timeout);
+                return sendRequest(transport);
+            }
+            ;
+            function timeout() {
+                if (retried < max_retries)
+                    return retry(transport);
+                var error = new Error('Request has timed out');
+                error.request = message;
+                error.retry = retry;
+                dispatchCallback(error);
+            }
+            ;
+            return sendRequest(transport);
+        }
+        ;
+        // Return the packed message
+        message = packer.pack(message);
+        transport = transport || this.getTransport();
+        if (transport)
+            return transport.send(message);
+        return message;
+    };
+    /**
+     * Decode and process a JsonRPC 2.0 message
+     *
+     * @param {string} message - string with the content of the message
+     *
+     * @returns {RpcNotification|RpcRequest|undefined} - the representation of the
+     *   notification or the request. If a response was processed, it will return
+     *   `undefined` to notify that it was processed
+     *
+     * @throws {TypeError} - Message is not defined
+     */
+    this.decode = function (message, transport) {
+        if (!message)
+            throw new TypeError("Message is not defined");
+        try {
+            message = packer.unpack(message);
+        }
+        catch (e) {
+            // Ignore invalid messages
+            return console.debug(e, message);
+        }
+        ;
+        var id = message.id;
+        var ack = message.ack;
+        var method = message.method;
+        var params = message.params || {};
+        var from = params.from;
+        var dest = params.dest;
+        // Ignore messages send by us
+        if (self.peerID != undefined && from == self.peerID)
+            return;
+        // Notification
+        if (id == undefined && ack == undefined) {
+            var notification = new RpcNotification(method, params);
+            if (self.emit('request', notification))
+                return;
+            return notification;
+        }
+        ;
+        function processRequest() {
+            // If we have a transport and it's a duplicated request, reply inmediatly
+            transport = unifyTransport(transport) || self.getTransport();
+            if (transport) {
+                var response = responses.get(id, from);
+                if (response)
+                    return transport.send(response.message);
+            }
+            ;
+            var idAck = (id != undefined) ? id : ack;
+            var request = new RpcRequest(method, params, idAck, from, transport);
+            if (self.emit('request', request))
+                return;
+            return request;
+        }
+        ;
+        function processResponse(request, error, result) {
+            request.callback(error, result);
+        }
+        ;
+        function duplicatedResponse(timeout) {
+            console.warn("Response already processed", message);
+            // Update duplicated responses timeout
+            clearTimeout(timeout);
+            storeProcessedResponse(ack, from);
+        }
+        ;
+        // Request, or response with own method
+        if (method) {
+            // Check if it's a response with own method
+            if (dest == undefined || dest == self.peerID) {
+                var request = requests.get(ack, from);
+                if (request) {
+                    var responseMethods = request.responseMethods;
+                    if (method == responseMethods.error)
+                        return processResponse(request, params);
+                    if (method == responseMethods.response)
+                        return processResponse(request, null, params);
+                    return processRequest();
+                }
+                var processed = processedResponses.get(ack, from);
+                if (processed)
+                    return duplicatedResponse(processed);
+            }
+            // Request
+            return processRequest();
+        }
+        ;
+        var error = message.error;
+        var result = message.result;
+        // Ignore responses not send to us
+        if (error && error.dest && error.dest != self.peerID)
+            return;
+        if (result && result.dest && result.dest != self.peerID)
+            return;
+        // Response
+        var request = requests.get(ack, from);
+        if (!request) {
+            var processed = processedResponses.get(ack, from);
+            if (processed)
+                return duplicatedResponse(processed);
+            return console.warn("No callback was defined for this message", message);
+        }
+        ;
+        // Process response
+        processResponse(request, error, result);
+    };
+}
+;
+inherits(RpcBuilder, EventEmitter);
+RpcBuilder.RpcNotification = RpcNotification;
+module.exports = RpcBuilder;
+var clients = __webpack_require__(200);
+var transports = __webpack_require__(202);
+RpcBuilder.clients = clients;
+RpcBuilder.clients.transports = transports;
+RpcBuilder.packers = packers;
+//# sourceMappingURL=index.js.map
+
+/***/ }),
+/* 96 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var EventEmitter = __webpack_require__(32);
+var Publisher = /** @class */ (function () {
+    function Publisher(stream, parentId, isScreenRequested) {
+        var _this = this;
+        this.ee = new EventEmitter();
+        this.accessAllowed = false;
+        this.isScreenRequested = false;
+        this.stream = stream;
+        this.isScreenRequested = isScreenRequested;
+        this.stream.addEventListener('camera-access-changed', function (event) {
+            _this.accessAllowed = event.accessAllowed;
+            if (_this.accessAllowed) {
+                _this.ee.emitEvent('accessAllowed');
+            }
+            else {
+                _this.ee.emitEvent('accessDenied');
+            }
+        });
+        if (document.getElementById(parentId) != null) {
+            this.element = document.getElementById(parentId);
+        }
+    }
+    Publisher.prototype.publishAudio = function (value) {
+        this.stream.getWebRtcPeer().audioEnabled = value;
+    };
+    Publisher.prototype.publishVideo = function (value) {
+        this.stream.getWebRtcPeer().videoEnabled = value;
+    };
+    Publisher.prototype.destroy = function () {
+        this.session.unpublish(this);
+        this.stream.dispose();
+        this.stream.removeVideo(this.element);
+        return this;
+    };
+    Publisher.prototype.subscribeToRemote = function () {
+        this.stream.subscribeToMyRemote();
+    };
+    Publisher.prototype.on = function (eventName, callback) {
+        var _this = this;
+        this.ee.addListener(eventName, function (event) {
+            if (event) {
+                console.info("Event '" + eventName + "' triggered by 'Publisher'", event);
+            }
+            else {
+                console.info("Event '" + eventName + "' triggered by 'Publisher'");
+            }
+            callback(event);
+        });
+        if (eventName == 'videoElementCreated') {
+            if (this.stream.isVideoELementCreated) {
+                this.ee.emitEvent('videoElementCreated', [{
+                        element: this.stream.getVideoElement()
+                    }]);
+            }
+            else {
+                this.stream.addOnceEventListener('video-element-created-by-stream', function (element) {
+                    _this.id = element.id;
+                    _this.ee.emitEvent('videoElementCreated', [{
+                            element: element.element
+                        }]);
+                });
+            }
+        }
+        if (eventName == 'videoPlaying') {
+            var video = this.stream.getVideoElement();
+            if (!this.stream.displayMyRemote() && video &&
+                video.currentTime > 0 &&
+                video.paused == false &&
+                video.ended == false &&
+                video.readyState == 4) {
+                this.ee.emitEvent('videoPlaying', [{
+                        element: this.stream.getVideoElement()
+                    }]);
+            }
+            else {
+                this.stream.addOnceEventListener('video-is-playing', function (element) {
+                    _this.ee.emitEvent('videoPlaying', [{
+                            element: element.element
+                        }]);
+                });
+            }
+        }
+        if (eventName == 'remoteVideoPlaying') {
+            var video = this.stream.getVideoElement();
+            if (this.stream.displayMyRemote() && video &&
+                video.currentTime > 0 &&
+                video.paused == false &&
+                video.ended == false &&
+                video.readyState == 4) {
+                this.ee.emitEvent('remoteVideoPlaying', [{
+                        element: this.stream.getVideoElement()
+                    }]);
+            }
+            else {
+                this.stream.addOnceEventListener('remote-video-is-playing', function (element) {
+                    _this.ee.emitEvent('remoteVideoPlaying', [{
+                            element: element.element
+                        }]);
+                });
+            }
+        }
+        if (eventName == 'accessAllowed') {
+            if (this.stream.accessIsAllowed) {
+                this.ee.emitEvent('accessAllowed');
+            }
+            else {
+                this.stream.addEventListener('access-allowed-by-publisher', function () {
+                    _this.ee.emitEvent('accessAllowed');
+                });
+            }
+        }
+        if (eventName == 'accessDenied') {
+            if (this.stream.accessIsDenied) {
+                this.ee.emitEvent('accessDenied');
+            }
+            else {
+                this.stream.addEventListener('access-denied-by-publisher', function () {
+                    _this.ee.emitEvent('accessDenied');
+                });
+            }
+        }
+    };
+    return Publisher;
+}());
+exports.Publisher = Publisher;
+//# sourceMappingURL=Publisher.js.map
+
+/***/ }),
+/* 97 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var Subscriber_1 = __webpack_require__(98);
+var EventEmitter = __webpack_require__(32);
+var Session = /** @class */ (function () {
+    function Session(session, openVidu) {
+        var _this = this;
+        this.session = session;
+        this.openVidu = openVidu;
+        this.ee = new EventEmitter();
+        this.sessionId = session.getSessionId();
+        // Listens to the deactivation of the default behaviour upon the deletion of a Stream object
+        this.session.addEventListener('stream-destroyed-default', function (event) {
+            event.stream.removeVideo();
+        });
+        // Listens to the deactivation of the default behaviour upon the disconnection of a Session
+        this.session.addEventListener('session-disconnected-default', function () {
+            var s;
+            for (var _i = 0, _a = _this.openVidu.openVidu.getRemoteStreams(); _i < _a.length; _i++) {
+                s = _a[_i];
+                s.removeVideo();
+            }
+            if (_this.connection) {
+                for (var streamId in _this.connection.getStreams()) {
+                    _this.connection.getStreams()[streamId].removeVideo();
+                }
+            }
+        });
+        // Sets or updates the value of 'connection' property. Triggered by SessionInternal when succesful connection
+        this.session.addEventListener('update-connection-object', function (event) {
+            _this.connection = event.connection;
+        });
+    }
+    Session.prototype.connect = function (param1, param2, param3) {
+        // Early configuration to deactivate automatic subscription to streams
+        if (param3) {
+            this.session.configure({
+                sessionId: this.session.getSessionId(),
+                participantId: param1,
+                metadata: this.session.stringClientMetadata(param2),
+                subscribeToStreams: false
+            });
+            this.session.connect(param1, param3);
+        }
+        else {
+            this.session.configure({
+                sessionId: this.session.getSessionId(),
+                participantId: param1,
+                metadata: '',
+                subscribeToStreams: false
+            });
+            this.session.connect(param1, param2);
+        }
+    };
+    Session.prototype.disconnect = function () {
+        var _this = this;
+        this.openVidu.openVidu.close(false);
+        this.session.emitEvent('sessionDisconnected', [{
+                preventDefault: function () { _this.session.removeEvent('session-disconnected-default'); }
+            }]);
+        this.session.emitEvent('session-disconnected-default', [{}]);
+    };
+    Session.prototype.publish = function (publisher) {
+        var _this = this;
+        if (publisher.isScreenRequested && !publisher.stream.isScreenRequestedReady) {
+            publisher.stream.addOnceEventListener('screen-ready', function () {
+                publisher.session = _this;
+                publisher.stream.publish();
+            });
+        }
+        else {
+            publisher.session = this;
+            publisher.stream.publish();
+        }
+    };
+    Session.prototype.unpublish = function (publisher) {
+        this.session.unpublish(publisher.stream);
+    };
+    Session.prototype.on = function (eventName, callback) {
+        this.session.addEventListener(eventName, function (event) {
+            if (event) {
+                console.info("Event '" + eventName + "' triggered by 'Session'", event);
+            }
+            else {
+                console.info("Event '" + eventName + "' triggered by 'Session'");
+            }
+            callback(event);
+        });
+    };
+    Session.prototype.once = function (eventName, callback) {
+        this.session.addOnceEventListener(eventName, function (event) {
+            callback(event);
+        });
+    };
+    Session.prototype.off = function (eventName, eventHandler) {
+        this.session.removeListener(eventName, eventHandler);
+    };
+    Session.prototype.subscribe = function (param1, param2, param3) {
+        // Subscription
+        this.session.subscribe(param1);
+        var subscriber = new Subscriber_1.Subscriber(param1, param2);
+        param1.playOnlyVideo(param2, null);
+        return subscriber;
+    };
+    Session.prototype.unsubscribe = function (subscriber) {
+        this.session.unsuscribe(subscriber.stream);
+        subscriber.stream.removeVideo();
+    };
+    return Session;
+}());
+exports.Session = Session;
+//# sourceMappingURL=Session.js.map
+
+/***/ }),
+/* 98 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var EventEmitter = __webpack_require__(32);
+var Subscriber = /** @class */ (function () {
+    function Subscriber(stream, parentId) {
+        this.ee = new EventEmitter();
+        this.stream = stream;
+        if (document.getElementById(parentId) != null) {
+            this.element = document.getElementById(parentId);
+        }
+    }
+    Subscriber.prototype.on = function (eventName, callback) {
+        var _this = this;
+        this.ee.addListener(eventName, function (event) {
+            if (event) {
+                console.info("Event '" + eventName + "' triggered by 'Subscriber'", event);
+            }
+            else {
+                console.info("Event '" + eventName + "' triggered by 'Subscriber'");
+            }
+            callback(event);
+        });
+        if (eventName == 'videoElementCreated') {
+            if (this.stream.isVideoELementCreated) {
+                this.ee.emitEvent('videoElementCreated', [{
+                        element: this.stream.getVideoElement()
+                    }]);
+            }
+            else {
+                this.stream.addOnceEventListener('video-element-created-by-stream', function (element) {
+                    console.warn("Subscriber emitting videoElementCreated");
+                    _this.id = element.id;
+                    _this.ee.emitEvent('videoElementCreated', [{
+                            element: element
+                        }]);
+                });
+            }
+        }
+        if (eventName == 'videoPlaying') {
+            var video = this.stream.getVideoElement();
+            if (!this.stream.displayMyRemote() && video &&
+                video.currentTime > 0 &&
+                video.paused == false &&
+                video.ended == false &&
+                video.readyState == 4) {
+                this.ee.emitEvent('videoPlaying', [{
+                        element: this.stream.getVideoElement()
+                    }]);
+            }
+            else {
+                this.stream.addOnceEventListener('video-is-playing', function (element) {
+                    _this.ee.emitEvent('videoPlaying', [{
+                            element: element.element
+                        }]);
+                });
+            }
+        }
+    };
+    return Subscriber;
+}());
+exports.Subscriber = Subscriber;
+//# sourceMappingURL=Subscriber.js.map
+
+/***/ }),
+/* 99 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var Stream_1 = __webpack_require__(64);
+var Connection = /** @class */ (function () {
+    function Connection(openVidu, local, room, options) {
+        this.openVidu = openVidu;
+        this.local = local;
+        this.room = room;
+        this.options = options;
+        this.streams = {};
+        this.streamsOpts = [];
+        console.info("'Connection' created (" + (local ? "local" : "remote") + ")" + (local ? "" : ", with 'connectionId' [" + (options ? options.id : '') + "] "));
+        if (options) {
+            this.connectionId = options.id;
+            this.data = options.metadata;
+            if (options.streams) {
+                this.initStreams(options);
+            }
+        }
+    }
+    Connection.prototype.addStream = function (stream) {
+        this.streams[stream.getIdInParticipant()] = stream;
+        this.room.getStreams()[stream.getIdInParticipant()] = stream;
+    };
+    Connection.prototype.getStreams = function () {
+        return this.streams;
+    };
+    Connection.prototype.dispose = function () {
+        for (var key in this.streams) {
+            this.streams[key].dispose();
+        }
+    };
+    Connection.prototype.sendIceCandidate = function (candidate) {
+        console.debug((this.local ? "Local" : "Remote"), "candidate for", this.connectionId, JSON.stringify(candidate));
+        this.openVidu.sendRequest("onIceCandidate", {
+            endpointName: this.connectionId,
+            candidate: candidate.candidate,
+            sdpMid: candidate.sdpMid,
+            sdpMLineIndex: candidate.sdpMLineIndex
+        }, function (error, response) {
+            if (error) {
+                console.error("Error sending ICE candidate: "
+                    + JSON.stringify(error));
+            }
+        });
+    };
+    Connection.prototype.initStreams = function (options) {
+        for (var _i = 0, _a = options.streams; _i < _a.length; _i++) {
+            var streamOptions = _a[_i];
+            var streamOpts = {
+                id: streamOptions.id,
+                connection: this,
+                sendAudio: streamOptions.sendAudio,
+                sendVideo: streamOptions.sendVideo,
+                recvAudio: (streamOptions.audioActive == undefined ? true : streamOptions.audioActive),
+                recvVideo: (streamOptions.videoActive == undefined ? true : streamOptions.videoActive),
+                activeAudio: streamOptions.activeAudio,
+                activeVideo: streamOptions.activeVideo,
+                data: streamOptions.data,
+                mediaConstraints: streamOptions.mediaConstraints
+            };
+            var stream = new Stream_1.Stream(this.openVidu, false, this.room, streamOpts);
+            this.addStream(stream);
+            this.streamsOpts.push(streamOpts);
+        }
+        console.info("Remote 'Connection' with 'connectionId' [" + this.connectionId + "] is now configured for receiving Streams with options: ", this.streamsOpts);
+    };
+    return Connection;
+}());
+exports.Connection = Connection;
+//# sourceMappingURL=Connection.js.map
+
+/***/ }),
+/* 100 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -61376,7 +63243,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var Subject_1 = __webpack_require__(20);
-var ObjectUnsubscribedError_1 = __webpack_require__(105);
+var ObjectUnsubscribedError_1 = __webpack_require__(112);
 /**
  * @class BehaviorSubject<T>
  */
@@ -61420,7 +63287,7 @@ exports.BehaviorSubject = BehaviorSubject;
 //# sourceMappingURL=BehaviorSubject.js.map
 
 /***/ }),
-/* 94 */
+/* 101 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -61434,7 +63301,7 @@ exports.empty = {
 //# sourceMappingURL=Observer.js.map
 
 /***/ }),
-/* 95 */
+/* 102 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -61561,37 +63428,37 @@ function dispatchError(arg) {
 //# sourceMappingURL=PromiseObservable.js.map
 
 /***/ }),
-/* 96 */
+/* 103 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-var ForkJoinObservable_1 = __webpack_require__(226);
+var ForkJoinObservable_1 = __webpack_require__(241);
 exports.forkJoin = ForkJoinObservable_1.ForkJoinObservable.create;
 //# sourceMappingURL=forkJoin.js.map
 
 /***/ }),
-/* 97 */
+/* 104 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-var PromiseObservable_1 = __webpack_require__(95);
+var PromiseObservable_1 = __webpack_require__(102);
 exports.fromPromise = PromiseObservable_1.PromiseObservable.create;
 //# sourceMappingURL=fromPromise.js.map
 
 /***/ }),
-/* 98 */
+/* 105 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-var merge_1 = __webpack_require__(242);
+var merge_1 = __webpack_require__(257);
 exports.merge = merge_1.mergeStatic;
 //# sourceMappingURL=merge.js.map
 
 /***/ }),
-/* 99 */
+/* 106 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -61601,7 +63468,7 @@ exports.of = ArrayObservable_1.ArrayObservable.of;
 //# sourceMappingURL=of.js.map
 
 /***/ }),
-/* 100 */
+/* 107 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -61723,7 +63590,7 @@ var CatchSubscriber = (function (_super) {
 //# sourceMappingURL=catch.js.map
 
 /***/ }),
-/* 101 */
+/* 108 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -61734,7 +63601,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var Subscriber_1 = __webpack_require__(4);
-var EmptyError_1 = __webpack_require__(68);
+var EmptyError_1 = __webpack_require__(70);
 /**
  * Emits only the first value (or the first value that meets some condition)
  * emitted by the source Observable.
@@ -61881,7 +63748,7 @@ var FirstSubscriber = (function (_super) {
 //# sourceMappingURL=first.js.map
 
 /***/ }),
-/* 102 */
+/* 109 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -62058,12 +63925,12 @@ exports.MergeMapSubscriber = MergeMapSubscriber;
 //# sourceMappingURL=mergeMap.js.map
 
 /***/ }),
-/* 103 */
+/* 110 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-var multicast_1 = __webpack_require__(243);
+var multicast_1 = __webpack_require__(258);
 var Subject_1 = __webpack_require__(20);
 function shareSubjectFactory() {
     return new Subject_1.Subject();
@@ -62088,13 +63955,13 @@ exports.share = share;
 //# sourceMappingURL=share.js.map
 
 /***/ }),
-/* 104 */
+/* 111 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-var AsyncAction_1 = __webpack_require__(250);
-var AsyncScheduler_1 = __webpack_require__(251);
+var AsyncAction_1 = __webpack_require__(265);
+var AsyncScheduler_1 = __webpack_require__(266);
 /**
  *
  * Async Scheduler
@@ -62141,7 +64008,7 @@ exports.async = new AsyncScheduler_1.AsyncScheduler(AsyncAction_1.AsyncAction);
 //# sourceMappingURL=async.js.map
 
 /***/ }),
-/* 105 */
+/* 112 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -62174,7 +64041,7 @@ exports.ObjectUnsubscribedError = ObjectUnsubscribedError;
 //# sourceMappingURL=ObjectUnsubscribedError.js.map
 
 /***/ }),
-/* 106 */
+/* 113 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -62183,7 +64050,7 @@ exports.isArrayLike = (function (x) { return x && typeof x.length === 'number'; 
 //# sourceMappingURL=isArrayLike.js.map
 
 /***/ }),
-/* 107 */
+/* 114 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -62195,7 +64062,7 @@ exports.isObject = isObject;
 //# sourceMappingURL=isObject.js.map
 
 /***/ }),
-/* 108 */
+/* 115 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -62207,12 +64074,12 @@ exports.isPromise = isPromise;
 //# sourceMappingURL=isPromise.js.map
 
 /***/ }),
-/* 109 */
+/* 116 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-var errorObject_1 = __webpack_require__(69);
+var errorObject_1 = __webpack_require__(71);
 var tryCatchTarget;
 function tryCatcher() {
     try {
@@ -62232,7 +64099,7 @@ exports.tryCatch = tryCatch;
 //# sourceMappingURL=tryCatch.js.map
 
 /***/ }),
-/* 110 */
+/* 117 */
 /***/ (function(module, exports) {
 
 var grammar = module.exports = {
@@ -62495,7 +64362,7 @@ Object.keys(grammar).forEach(function (key) {
 
 
 /***/ }),
-/* 111 */
+/* 118 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -63152,13 +65019,7 @@ if (true) {
 
 
 /***/ }),
-/* 112 */,
-/* 113 */,
-/* 114 */,
-/* 115 */,
-/* 116 */,
-/* 117 */,
-/* 118 */
+/* 119 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -63173,17 +65034,17 @@ if (true) {
 
 
 
-var adapterFactory = __webpack_require__(280);
+var adapterFactory = __webpack_require__(282);
 module.exports = adapterFactory({window: global.window});
 
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(9)))
 
 /***/ }),
-/* 119 */,
 /* 120 */,
 /* 121 */,
 /* 122 */,
-/* 123 */
+/* 123 */,
+/* 124 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -63201,7 +65062,7 @@ module.exports = adapterFactory({window: global.window});
 /* unused harmony export ɵWebAnimationsPlayer */
 
 /**
- * @license Angular v4.4.3
+ * @license Angular v4.4.4
  * (c) 2010-2017 Google, Inc. https://angular.io/
  * License: MIT
  */
@@ -65195,7 +67056,11 @@ var AnimationTimelineContext = (function () {
         }
         if (selector.length > 0) {
             var /** @type {?} */ multi = limit != 1;
-            results.push.apply(results, this._driver.query(this.element, selector, multi));
+            var /** @type {?} */ elements = this._driver.query(this.element, selector, multi);
+            if (limit !== 0) {
+                elements = elements.slice(0, limit);
+            }
+            results.push.apply(results, elements);
         }
         if (!optional && results.length == 0) {
             errors.push("`query(\"" + originalSelector + "\")` returned zero elements. (Use `query(\"" + originalSelector + "\", { optional: true })` if you wish to allow this.)");
@@ -68402,7 +70267,7 @@ function supportsWebAnimations() {
 
 
 /***/ }),
-/* 124 */
+/* 125 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -68638,7 +70503,7 @@ function supportsWebAnimations() {
 /* unused harmony export removeSummaryDuplicates */
 
 /**
- * @license Angular v4.4.3
+ * @license Angular v4.4.4
  * (c) 2010-2017 Google, Inc. https://angular.io/
  * License: MIT
  */
@@ -68658,7 +70523,7 @@ function supportsWebAnimations() {
 /**
  * \@stable
  */
-var VERSION = new __WEBPACK_IMPORTED_MODULE_1__angular_core__["d" /* Version */]('4.4.3');
+var VERSION = new __WEBPACK_IMPORTED_MODULE_1__angular_core__["d" /* Version */]('4.4.4');
 /**
  * @license
  * Copyright Google Inc. All Rights Reserved.
@@ -79811,6 +81676,11 @@ function createTokenForExternalReference(reflector, reference) {
  */
 var PRESERVE_WS_ATTR_NAME = 'ngPreserveWhitespaces';
 var SKIP_WS_TRIM_TAGS = new Set(['pre', 'template', 'textarea', 'script', 'style']);
+// Equivalent to \s with \u00a0 (non-breaking space) excluded.
+// Based on https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp
+var WS_CHARS = ' \f\n\r\t\v\u1680\u180e\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff';
+var NO_WS_REGEXP = new RegExp("[^" + WS_CHARS + "]");
+var WS_REPLACE_REGEXP = new RegExp("[" + WS_CHARS + "]{2,}", 'g');
 /**
  * @param {?} attrs
  * @return {?}
@@ -79874,9 +81744,9 @@ var WhitespaceVisitor = (function () {
      * @return {?}
      */
     WhitespaceVisitor.prototype.visitText = function (text, context) {
-        var /** @type {?} */ isBlank = text.value.trim().length === 0;
-        if (!isBlank) {
-            return new Text(replaceNgsp(text.value).replace(/\s\s+/g, ' '), text.sourceSpan);
+        var /** @type {?} */ isNotBlank = text.value.match(NO_WS_REGEXP);
+        if (isNotBlank) {
+            return new Text(replaceNgsp(text.value).replace(WS_REPLACE_REGEXP, ' '), text.sourceSpan);
         }
         return null;
     };
@@ -87744,7 +89614,7 @@ var EmitterVisitorContext = (function () {
     EmitterVisitorContext.prototype.spanOf = function (line, column) {
         var /** @type {?} */ emittedLine = this._lines[line - this._preambleLineCount];
         if (emittedLine) {
-            var /** @type {?} */ columnsLeft = column - emittedLine.indent;
+            var /** @type {?} */ columnsLeft = column - _createIndent(emittedLine.indent).length;
             for (var /** @type {?} */ partIndex = 0; partIndex < emittedLine.parts.length; partIndex++) {
                 var /** @type {?} */ part = emittedLine.parts[partIndex];
                 if (part.length > columnsLeft) {
@@ -93498,7 +95368,9 @@ var StaticReflector = (function () {
                         var item = _a[_i];
                         // Check for a spread expression
                         if (item && item.__symbolic === 'spread') {
-                            var /** @type {?} */ spreadArray = simplify(item.expression);
+                            // We call with references as 0 because we require the actual value and cannot
+                            // tolerate a reference here.
+                            var /** @type {?} */ spreadArray = simplifyInContext(context, item.expression, depth, 0);
                             if (Array.isArray(spreadArray)) {
                                 for (var _b = 0, spreadArray_1 = spreadArray; _b < spreadArray_1.length; _b++) {
                                     var spreadItem = spreadArray_1[_b];
@@ -93518,7 +95390,7 @@ var StaticReflector = (function () {
                 if (expression instanceof StaticSymbol) {
                     // Stop simplification at builtin symbols or if we are in a reference context
                     if (expression === self.injectionToken || expression === self.opaqueToken ||
-                        self.conversionMap.has(expression) || references > 0) {
+                        self.conversionMap.has(expression) || (references > 0 && !expression.members.length)) {
                         return expression;
                     }
                     else {
@@ -96442,16 +98314,16 @@ function _mergeArrays(parts) {
 //# sourceMappingURL=compiler.es5.js.map
 
 /***/ }),
-/* 125 */
+/* 126 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_tslib__ = __webpack_require__(6);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_core__ = __webpack_require__(2);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__angular_platform_browser__ = __webpack_require__(13);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_rxjs_BehaviorSubject__ = __webpack_require__(93);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_rxjs_BehaviorSubject__ = __webpack_require__(100);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_rxjs_BehaviorSubject___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3_rxjs_BehaviorSubject__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_rxjs_operator_filter__ = __webpack_require__(64);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_rxjs_operator_filter__ = __webpack_require__(66);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_rxjs_operator_filter___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_4_rxjs_operator_filter__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_rxjs_operator_map__ = __webpack_require__(39);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_rxjs_operator_map___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_5_rxjs_operator_map__);
@@ -99889,12 +101761,12 @@ FlexLayoutModule.ctorParameters = function () { return []; };
 
 
 /***/ }),
-/* 126 */
+/* 127 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_tslib__ = __webpack_require__(6);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_compiler__ = __webpack_require__(124);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_compiler__ = __webpack_require__(125);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__angular_core__ = __webpack_require__(2);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__angular_common__ = __webpack_require__(24);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__angular_platform_browser__ = __webpack_require__(13);
@@ -99905,7 +101777,7 @@ FlexLayoutModule.ctorParameters = function () { return []; };
 /* unused harmony export ɵResourceLoaderImpl */
 
 /**
- * @license Angular v4.4.3
+ * @license Angular v4.4.4
  * (c) 2010-2017 Google, Inc. https://angular.io/
  * License: MIT
  */
@@ -100038,7 +101910,7 @@ var CachedResourceLoader = (function (_super) {
 /**
  * @stable
  */
-var VERSION = new __WEBPACK_IMPORTED_MODULE_2__angular_core__["d" /* Version */]('4.4.3');
+var VERSION = new __WEBPACK_IMPORTED_MODULE_2__angular_core__["d" /* Version */]('4.4.4');
 /**
  * @license
  * Copyright Google Inc. All Rights Reserved.
@@ -100072,7 +101944,7 @@ var platformBrowserDynamic = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__
 
 
 /***/ }),
-/* 127 */
+/* 128 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -100080,7 +101952,7 @@ var platformBrowserDynamic = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_core__ = __webpack_require__(2);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__angular_platform_browser__ = __webpack_require__(13);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__angular_animations__ = __webpack_require__(42);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__angular_animations_browser__ = __webpack_require__(123);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__angular_animations_browser__ = __webpack_require__(124);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return BrowserAnimationsModule; });
 /* unused harmony export NoopAnimationsModule */
 /* unused harmony export ɵBrowserAnimationBuilder */
@@ -100096,7 +101968,7 @@ var platformBrowserDynamic = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__
 /* unused harmony export ɵc */
 
 /**
- * @license Angular v4.4.3
+ * @license Angular v4.4.4
  * (c) 2010-2017 Google, Inc. https://angular.io/
  * License: MIT
  */
@@ -100838,49 +102710,49 @@ NoopAnimationsModule.ctorParameters = function () { return []; };
 
 
 /***/ }),
-/* 128 */
+/* 129 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_tslib__ = __webpack_require__(6);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_common__ = __webpack_require__(24);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__angular_core__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_rxjs_BehaviorSubject__ = __webpack_require__(93);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_rxjs_BehaviorSubject__ = __webpack_require__(100);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_rxjs_BehaviorSubject___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3_rxjs_BehaviorSubject__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_rxjs_Subject__ = __webpack_require__(20);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_rxjs_Subject___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_4_rxjs_Subject__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_rxjs_observable_from__ = __webpack_require__(230);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_rxjs_observable_from__ = __webpack_require__(245);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_rxjs_observable_from___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_5_rxjs_observable_from__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_rxjs_observable_of__ = __webpack_require__(99);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_rxjs_observable_of__ = __webpack_require__(106);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_rxjs_observable_of___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_6_rxjs_observable_of__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7_rxjs_operator_concatMap__ = __webpack_require__(236);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7_rxjs_operator_concatMap__ = __webpack_require__(251);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_7_rxjs_operator_concatMap___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_7_rxjs_operator_concatMap__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8_rxjs_operator_every__ = __webpack_require__(239);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8_rxjs_operator_every__ = __webpack_require__(254);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_8_rxjs_operator_every___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_8_rxjs_operator_every__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9_rxjs_operator_first__ = __webpack_require__(101);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9_rxjs_operator_first__ = __webpack_require__(108);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_9_rxjs_operator_first___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_9_rxjs_operator_first__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10_rxjs_operator_last__ = __webpack_require__(241);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10_rxjs_operator_last__ = __webpack_require__(256);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_10_rxjs_operator_last___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_10_rxjs_operator_last__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_11_rxjs_operator_map__ = __webpack_require__(39);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_11_rxjs_operator_map___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_11_rxjs_operator_map__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12_rxjs_operator_mergeMap__ = __webpack_require__(102);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12_rxjs_operator_mergeMap__ = __webpack_require__(109);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_12_rxjs_operator_mergeMap___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_12_rxjs_operator_mergeMap__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_13_rxjs_operator_reduce__ = __webpack_require__(245);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_13_rxjs_operator_reduce__ = __webpack_require__(260);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_13_rxjs_operator_reduce___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_13_rxjs_operator_reduce__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_14_rxjs_Observable__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_14_rxjs_Observable___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_14_rxjs_Observable__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_15_rxjs_operator_catch__ = __webpack_require__(100);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_15_rxjs_operator_catch__ = __webpack_require__(107);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_15_rxjs_operator_catch___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_15_rxjs_operator_catch__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_16_rxjs_operator_concatAll__ = __webpack_require__(235);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_16_rxjs_operator_concatAll__ = __webpack_require__(250);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_16_rxjs_operator_concatAll___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_16_rxjs_operator_concatAll__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_17_rxjs_util_EmptyError__ = __webpack_require__(68);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_17_rxjs_util_EmptyError__ = __webpack_require__(70);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_17_rxjs_util_EmptyError___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_17_rxjs_util_EmptyError__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_18_rxjs_observable_fromPromise__ = __webpack_require__(97);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_18_rxjs_observable_fromPromise__ = __webpack_require__(104);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_18_rxjs_observable_fromPromise___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_18_rxjs_observable_fromPromise__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_19_rxjs_operator_mergeAll__ = __webpack_require__(40);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_19_rxjs_operator_mergeAll___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_19_rxjs_operator_mergeAll__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_20__angular_platform_browser__ = __webpack_require__(13);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_21_rxjs_operator_filter__ = __webpack_require__(64);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_21_rxjs_operator_filter__ = __webpack_require__(66);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_21_rxjs_operator_filter___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_21_rxjs_operator_filter__);
 /* unused harmony export RouterLink */
 /* unused harmony export RouterLinkWithHref */
@@ -100939,7 +102811,7 @@ NoopAnimationsModule.ctorParameters = function () { return []; };
 /* unused harmony export ɵl */
 
 /**
- * @license Angular v4.4.3
+ * @license Angular v4.4.4
  * (c) 2010-2017 Google, Inc. https://angular.io/
  * License: MIT
  */
@@ -107192,7 +109064,7 @@ function provideRouterInitializer() {
 /**
  * \@stable
  */
-var VERSION = new __WEBPACK_IMPORTED_MODULE_2__angular_core__["d" /* Version */]('4.4.3');
+var VERSION = new __WEBPACK_IMPORTED_MODULE_2__angular_core__["d" /* Version */]('4.4.4');
 /**
  * @license
  * Copyright Google Inc. All Rights Reserved.
@@ -107228,7 +109100,6 @@ var VERSION = new __WEBPACK_IMPORTED_MODULE_2__angular_core__["d" /* Version */]
 
 
 /***/ }),
-/* 129 */,
 /* 130 */,
 /* 131 */,
 /* 132 */,
@@ -107290,14 +109161,15 @@ var VERSION = new __WEBPACK_IMPORTED_MODULE_2__angular_core__["d" /* Version */]
 /* 188 */,
 /* 189 */,
 /* 190 */,
-/* 191 */
+/* 191 */,
+/* 192 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 /* jshint node: true */
 
 
-var normalice = __webpack_require__(197);
+var normalice = __webpack_require__(198);
 
 /**
   # freeice
@@ -107362,8 +109234,8 @@ var normalice = __webpack_require__(197);
 var freeice = module.exports = function(opts) {
   // if a list of servers has been provided, then use it instead of defaults
   var servers = {
-    stun: (opts || {}).stun || __webpack_require__(194),
-    turn: (opts || {}).turn || __webpack_require__(195)
+    stun: (opts || {}).stun || __webpack_require__(195),
+    turn: (opts || {}).turn || __webpack_require__(196)
   };
 
   var stunCount = (opts || {}).stunCount || 2;
@@ -107402,7 +109274,7 @@ var freeice = module.exports = function(opts) {
 
 
 /***/ }),
-/* 192 */
+/* 193 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var __WEBPACK_AMD_DEFINE_RESULT__;/*! Hammer.JS - v2.0.7 - 2016-04-22
@@ -110052,10 +111924,10 @@ if (true) {
 
 
 /***/ }),
-/* 193 */
+/* 194 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var WildEmitter = __webpack_require__(289);
+var WildEmitter = __webpack_require__(291);
 
 function getMaxVolume (analyser, fftBins) {
   var maxVolume = -Infinity;
@@ -110071,7 +111943,10 @@ function getMaxVolume (analyser, fftBins) {
 }
 
 
-var audioContextType = window.AudioContext || window.webkitAudioContext;
+var audioContextType;
+if (typeof window !== 'undefined') {
+  audioContextType = window.AudioContext || window.webkitAudioContext;
+}
 // use a single audio context due to hardware limits
 var audioContext = null;
 module.exports = function(stream, options) {
@@ -110099,7 +111974,7 @@ module.exports = function(stream, options) {
   analyser = audioContext.createAnalyser();
   analyser.fftSize = 512;
   analyser.smoothingTimeConstant = smoothing;
-  fftBins = new Float32Array(analyser.fftSize);
+  fftBins = new Float32Array(analyser.frequencyBinCount);
 
   if (stream.jquery) stream = stream[0];
   if (stream instanceof HTMLAudioElement || stream instanceof HTMLVideoElement) {
@@ -110125,7 +112000,7 @@ module.exports = function(stream, options) {
   harker.setInterval = function(i) {
     interval = i;
   };
-  
+
   harker.stop = function() {
     running = false;
     harker.emit('volume_change', -100, threshold);
@@ -110133,6 +112008,8 @@ module.exports = function(stream, options) {
       harker.speaking = false;
       harker.emit('stopped_speaking');
     }
+    analyser.disconnect();
+    sourceNode.disconnect();
   };
   harker.speakingHistory = [];
   for (var i = 0; i < history; i++) {
@@ -110143,12 +112020,12 @@ module.exports = function(stream, options) {
   // and emit events if changed
   var looper = function() {
     setTimeout(function() {
-    
+
       //check if stop has been called
       if(!running) {
         return;
       }
-      
+
       var currentVolume = getMaxVolume(analyser, fftBins);
 
       harker.emit('volume_change', currentVolume, threshold);
@@ -110186,19 +112063,19 @@ module.exports = function(stream, options) {
 
 
 /***/ }),
-/* 194 */
+/* 195 */
 /***/ (function(module, exports) {
 
 module.exports = ["stun.l.google.com:19302","stun1.l.google.com:19302","stun2.l.google.com:19302","stun3.l.google.com:19302","stun4.l.google.com:19302","stun.ekiga.net","stun.ideasip.com","stun.schlund.de","stun.stunprotocol.org:3478","stun.voiparound.com","stun.voipbuster.com","stun.voipstunt.com","stun.voxgratia.org","stun.services.mozilla.com"]
 
 /***/ }),
-/* 195 */
+/* 196 */
 /***/ (function(module, exports) {
 
 module.exports = []
 
 /***/ }),
-/* 196 */
+/* 197 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(module) {/*!
@@ -110376,10 +112253,10 @@ module.exports = []
 	}
 
 })(typeof module === 'object' && module && typeof module.exports === 'object' && module.exports);
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(279)(module)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(281)(module)))
 
 /***/ }),
-/* 197 */
+/* 198 */
 /***/ (function(module, exports) {
 
 /**
@@ -110445,10 +112322,2389 @@ module.exports = function(input) {
 
 
 /***/ }),
-/* 198 */,
-/* 199 */,
-/* 200 */,
+/* 199 */
+/***/ (function(module, exports) {
+
+function Mapper() {
+    var sources = {};
+    this.forEach = function (callback) {
+        for (var key in sources) {
+            var source = sources[key];
+            for (var key2 in source)
+                callback(source[key2]);
+        }
+        ;
+    };
+    this.get = function (id, source) {
+        var ids = sources[source];
+        if (ids == undefined)
+            return undefined;
+        return ids[id];
+    };
+    this.remove = function (id, source) {
+        var ids = sources[source];
+        if (ids == undefined)
+            return;
+        delete ids[id];
+        // Check it's empty
+        for (var i in ids) {
+            return false;
+        }
+        delete sources[source];
+    };
+    this.set = function (value, id, source) {
+        if (value == undefined)
+            return this.remove(id, source);
+        var ids = sources[source];
+        if (ids == undefined)
+            sources[source] = ids = {};
+        ids[id] = value;
+    };
+}
+;
+Mapper.prototype.pop = function (id, source) {
+    var value = this.get(id, source);
+    if (value == undefined)
+        return undefined;
+    this.remove(id, source);
+    return value;
+};
+module.exports = Mapper;
+//# sourceMappingURL=Mapper.js.map
+
+/***/ }),
+/* 200 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/*
+ * (C) Copyright 2014 Kurento (http://kurento.org/)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+var JsonRpcClient = __webpack_require__(201);
+exports.JsonRpcClient = JsonRpcClient;
+//# sourceMappingURL=index.js.map
+
+/***/ }),
 /* 201 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/*
+ * (C) Copyright 2014 Kurento (http://kurento.org/)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+var RpcBuilder = __webpack_require__(95);
+var WebSocketWithReconnection = __webpack_require__(94);
+Date.now = Date.now || function () {
+    return +new Date;
+};
+var PING_INTERVAL = 5000;
+var RECONNECTING = 'RECONNECTING';
+var CONNECTED = 'CONNECTED';
+var DISCONNECTED = 'DISCONNECTED';
+var Logger = console;
+/**
+ *
+ * heartbeat: interval in ms for each heartbeat message,
+ * sendCloseMessage : true / false, before closing the connection, it sends a closeSession message
+ * <pre>
+ * ws : {
+ * 	uri : URI to conntect to,
+ *  useSockJS : true (use SockJS) / false (use WebSocket) by default,
+ * 	onconnected : callback method to invoke when connection is successful,
+ * 	ondisconnect : callback method to invoke when the connection is lost,
+ * 	onreconnecting : callback method to invoke when the client is reconnecting,
+ * 	onreconnected : callback method to invoke when the client succesfully reconnects,
+ * 	onerror : callback method to invoke when there is an error
+ * },
+ * rpc : {
+ * 	requestTimeout : timeout for a request,
+ * 	sessionStatusChanged: callback method for changes in session status,
+ * 	mediaRenegotiation: mediaRenegotiation
+ * }
+ * </pre>
+ */
+function JsonRpcClient(configuration) {
+    var self = this;
+    var wsConfig = configuration.ws;
+    var notReconnectIfNumLessThan = -1;
+    var pingNextNum = 0;
+    var enabledPings = true;
+    var pingPongStarted = false;
+    var pingInterval;
+    var status = DISCONNECTED;
+    var onreconnecting = wsConfig.onreconnecting;
+    var onreconnected = wsConfig.onreconnected;
+    var onconnected = wsConfig.onconnected;
+    var onerror = wsConfig.onerror;
+    configuration.rpc.pull = function (params, request) {
+        request.reply(null, "push");
+    };
+    wsConfig.onreconnecting = function () {
+        Logger.debug("--------- ONRECONNECTING -----------");
+        if (status === RECONNECTING) {
+            Logger.error("Websocket already in RECONNECTING state when receiving a new ONRECONNECTING message. Ignoring it");
+            return;
+        }
+        status = RECONNECTING;
+        if (onreconnecting) {
+            onreconnecting();
+        }
+    };
+    wsConfig.onreconnected = function () {
+        Logger.debug("--------- ONRECONNECTED -----------");
+        if (status === CONNECTED) {
+            Logger.error("Websocket already in CONNECTED state when receiving a new ONRECONNECTED message. Ignoring it");
+            return;
+        }
+        status = CONNECTED;
+        enabledPings = true;
+        updateNotReconnectIfLessThan();
+        usePing();
+        if (onreconnected) {
+            onreconnected();
+        }
+    };
+    wsConfig.onconnected = function () {
+        Logger.debug("--------- ONCONNECTED -----------");
+        if (status === CONNECTED) {
+            Logger.error("Websocket already in CONNECTED state when receiving a new ONCONNECTED message. Ignoring it");
+            return;
+        }
+        status = CONNECTED;
+        enabledPings = true;
+        usePing();
+        if (onconnected) {
+            onconnected();
+        }
+    };
+    wsConfig.onerror = function (error) {
+        Logger.debug("--------- ONERROR -----------");
+        status = DISCONNECTED;
+        if (onerror) {
+            onerror(error);
+        }
+    };
+    var ws = new WebSocketWithReconnection(wsConfig);
+    Logger.debug('Connecting websocket to URI: ' + wsConfig.uri);
+    var rpcBuilderOptions = {
+        request_timeout: configuration.rpc.requestTimeout,
+        ping_request_timeout: configuration.rpc.heartbeatRequestTimeout
+    };
+    var rpc = new RpcBuilder(RpcBuilder.packers.JsonRPC, rpcBuilderOptions, ws, function (request) {
+        Logger.debug('Received request: ' + JSON.stringify(request));
+        try {
+            var func = configuration.rpc[request.method];
+            if (func === undefined) {
+                Logger.error("Method " + request.method + " not registered in client");
+            }
+            else {
+                func(request.params, request);
+            }
+        }
+        catch (err) {
+            Logger.error('Exception processing request: ' + JSON.stringify(request));
+            Logger.error(err);
+        }
+    });
+    this.send = function (method, params, callback) {
+        if (method !== 'ping') {
+            Logger.debug('Request: method:' + method + " params:" + JSON.stringify(params));
+        }
+        var requestTime = Date.now();
+        rpc.encode(method, params, function (error, result) {
+            if (error) {
+                try {
+                    Logger.error("ERROR:" + error.message + " in Request: method:" +
+                        method + " params:" + JSON.stringify(params) + " request:" +
+                        error.request);
+                    if (error.data) {
+                        Logger.error("ERROR DATA:" + JSON.stringify(error.data));
+                    }
+                }
+                catch (e) { }
+                error.requestTime = requestTime;
+            }
+            if (callback) {
+                if (result != undefined && result.value !== 'pong') {
+                    Logger.debug('Response: ' + JSON.stringify(result));
+                }
+                callback(error, result);
+            }
+        });
+    };
+    function updateNotReconnectIfLessThan() {
+        Logger.debug("notReconnectIfNumLessThan = " + pingNextNum + ' (old=' +
+            notReconnectIfNumLessThan + ')');
+        notReconnectIfNumLessThan = pingNextNum;
+    }
+    function sendPing() {
+        if (enabledPings) {
+            var params = null;
+            if (pingNextNum == 0 || pingNextNum == notReconnectIfNumLessThan) {
+                params = {
+                    interval: configuration.heartbeat || PING_INTERVAL
+                };
+            }
+            pingNextNum++;
+            self.send('ping', params, (function (pingNum) {
+                return function (error, result) {
+                    if (error) {
+                        Logger.debug("Error in ping request #" + pingNum + " (" +
+                            error.message + ")");
+                        if (pingNum > notReconnectIfNumLessThan) {
+                            enabledPings = false;
+                            updateNotReconnectIfLessThan();
+                            Logger.debug("Server did not respond to ping message #" +
+                                pingNum + ". Reconnecting... ");
+                            ws.reconnectWs();
+                        }
+                    }
+                };
+            })(pingNextNum));
+        }
+        else {
+            Logger.debug("Trying to send ping, but ping is not enabled");
+        }
+    }
+    /*
+    * If configuration.hearbeat has any value, the ping-pong will work with the interval
+    * of configuration.hearbeat
+    */
+    function usePing() {
+        if (!pingPongStarted) {
+            Logger.debug("Starting ping (if configured)");
+            pingPongStarted = true;
+            if (configuration.heartbeat != undefined) {
+                pingInterval = setInterval(sendPing, configuration.heartbeat);
+                sendPing();
+            }
+        }
+    }
+    this.close = function () {
+        Logger.debug("Closing jsonRpcClient explicitly by client");
+        if (pingInterval != undefined) {
+            Logger.debug("Clearing ping interval");
+            clearInterval(pingInterval);
+        }
+        pingPongStarted = false;
+        enabledPings = false;
+        if (configuration.sendCloseMessage) {
+            Logger.debug("Sending close message");
+            this.send('closeSession', null, function (error, result) {
+                if (error) {
+                    Logger.error("Error sending close message: " + JSON.stringify(error));
+                }
+                ws.close();
+            });
+        }
+        else {
+            ws.close();
+        }
+    };
+    // This method is only for testing
+    this.forceClose = function (millis) {
+        ws.forceClose(millis);
+    };
+    this.reconnect = function () {
+        ws.reconnectWs();
+    };
+}
+module.exports = JsonRpcClient;
+//# sourceMappingURL=jsonrpcclient.js.map
+
+/***/ }),
+/* 202 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/*
+ * (C) Copyright 2014 Kurento (http://kurento.org/)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+var WebSocketWithReconnection = __webpack_require__(94);
+exports.WebSocketWithReconnection = WebSocketWithReconnection;
+//# sourceMappingURL=index.js.map
+
+/***/ }),
+/* 203 */
+/***/ (function(module, exports) {
+
+/**
+ * JsonRPC 2.0 packer
+ */
+/**
+ * Pack a JsonRPC 2.0 message
+ *
+ * @param {Object} message - object to be packaged. It requires to have all the
+ *   fields needed by the JsonRPC 2.0 message that it's going to be generated
+ *
+ * @return {String} - the stringified JsonRPC 2.0 message
+ */
+function pack(message, id) {
+    var result = {
+        jsonrpc: "2.0"
+    };
+    // Request
+    if (message.method) {
+        result.method = message.method;
+        if (message.params)
+            result.params = message.params;
+        // Request is a notification
+        if (id != undefined)
+            result.id = id;
+    }
+    else if (id != undefined) {
+        if (message.error) {
+            if (message.result !== undefined)
+                throw new TypeError("Both result and error are defined");
+            result.error = message.error;
+        }
+        else if (message.result !== undefined)
+            result.result = message.result;
+        else
+            throw new TypeError("No result or error is defined");
+        result.id = id;
+    }
+    ;
+    return JSON.stringify(result);
+}
+;
+/**
+ * Unpack a JsonRPC 2.0 message
+ *
+ * @param {String} message - string with the content of the JsonRPC 2.0 message
+ *
+ * @throws {TypeError} - Invalid JsonRPC version
+ *
+ * @return {Object} - object filled with the JsonRPC 2.0 message content
+ */
+function unpack(message) {
+    var result = message;
+    if (typeof message === 'string' || message instanceof String) {
+        result = JSON.parse(message);
+    }
+    // Check if it's a valid message
+    var version = result.jsonrpc;
+    if (version !== '2.0')
+        throw new TypeError("Invalid JsonRPC version '" + version + "': " + message);
+    // Response
+    if (result.method == undefined) {
+        if (result.id == undefined)
+            throw new TypeError("Invalid message: " + message);
+        var result_defined = result.result !== undefined;
+        var error_defined = result.error !== undefined;
+        // Check only result or error is defined, not both or none
+        if (result_defined && error_defined)
+            throw new TypeError("Both result and error are defined: " + message);
+        if (!result_defined && !error_defined)
+            throw new TypeError("No result or error is defined: " + message);
+        result.ack = result.id;
+        delete result.id;
+    }
+    // Return unpacked message
+    return result;
+}
+;
+exports.pack = pack;
+exports.unpack = unpack;
+//# sourceMappingURL=JsonRPC.js.map
+
+/***/ }),
+/* 204 */
+/***/ (function(module, exports) {
+
+function pack(message) {
+    throw new TypeError("Not yet implemented");
+}
+;
+function unpack(message) {
+    throw new TypeError("Not yet implemented");
+}
+;
+exports.pack = pack;
+exports.unpack = unpack;
+//# sourceMappingURL=XmlRPC.js.map
+
+/***/ }),
+/* 205 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var JsonRPC = __webpack_require__(203);
+var XmlRPC = __webpack_require__(204);
+exports.JsonRPC = JsonRPC;
+exports.XmlRPC = XmlRPC;
+//# sourceMappingURL=index.js.map
+
+/***/ }),
+/* 206 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/*
+ * (C) Copyright 2014-2015 Kurento (http://kurento.org/)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+var freeice = __webpack_require__(192);
+var inherits = __webpack_require__(93);
+var UAParser = __webpack_require__(277);
+var uuid = __webpack_require__(279);
+var hark = __webpack_require__(194);
+var EventEmitter = __webpack_require__(92).EventEmitter;
+var recursive = __webpack_require__(197).recursive.bind(undefined, true);
+var sdpTranslator = __webpack_require__(273);
+var logger = window.Logger || console;
+// var gUM = navigator.mediaDevices.getUserMedia || function (constraints) {
+//   return new Promise(navigator.getUserMedia(constraints, function (stream) {
+//     videoStream = stream
+//     start()
+//   }).eror(callback));
+// }
+/*try {
+  require('kurento-browser-extensions')
+} catch (error) {
+  if (typeof getScreenConstraints === 'undefined') {
+    logger.warn('screen sharing is not available')
+
+    getScreenConstraints = function getScreenConstraints(sendSource, callback) {
+      callback(new Error("This library is not enabled for screen sharing"))
+    }
+  }
+}*/
+var MEDIA_CONSTRAINTS = {
+    audio: true,
+    video: {
+        width: 640,
+        framerate: 15
+    }
+};
+// Somehow, the UAParser constructor gets an empty window object.
+// We need to pass the user agent string in order to get information
+var ua = (window && window.navigator) ? window.navigator.userAgent : '';
+var parser = new UAParser(ua);
+var browser = parser.getBrowser();
+var usePlanB = false;
+if (browser.name === 'Chrome' || browser.name === 'Chromium') {
+    logger.debug(browser.name + ": using SDP PlanB");
+    usePlanB = true;
+}
+function noop(error) {
+    if (error)
+        logger.error(error);
+}
+function trackStop(track) {
+    track.stop && track.stop();
+}
+function streamStop(stream) {
+    stream.getTracks().forEach(trackStop);
+}
+/**
+ * Returns a string representation of a SessionDescription object.
+ */
+var dumpSDP = function (description) {
+    if (typeof description === 'undefined' || description === null) {
+        return '';
+    }
+    return 'type: ' + description.type + '\r\n' + description.sdp;
+};
+function bufferizeCandidates(pc, onerror) {
+    var candidatesQueue = [];
+    pc.addEventListener('signalingstatechange', function () {
+        if (this.signalingState === 'stable') {
+            while (candidatesQueue.length) {
+                var entry = candidatesQueue.shift();
+                this.addIceCandidate(entry.candidate, entry.callback, entry.callback);
+            }
+        }
+    });
+    return function (candidate, callback) {
+        callback = callback || onerror;
+        switch (pc.signalingState) {
+            case 'closed':
+                callback(new Error('PeerConnection object is closed'));
+                break;
+            case 'stable':
+                if (pc.remoteDescription) {
+                    pc.addIceCandidate(candidate, callback, callback);
+                    break;
+                }
+            default:
+                candidatesQueue.push({
+                    candidate: candidate,
+                    callback: callback
+                });
+        }
+    };
+}
+/* Simulcast utilities */
+function removeFIDFromOffer(sdp) {
+    var n = sdp.indexOf("a=ssrc-group:FID");
+    if (n > 0) {
+        return sdp.slice(0, n);
+    }
+    else {
+        return sdp;
+    }
+}
+function getSimulcastInfo(videoStream) {
+    var videoTracks = videoStream.getVideoTracks();
+    if (!videoTracks.length) {
+        logger.warn('No video tracks available in the video stream');
+        return '';
+    }
+    var lines = [
+        'a=x-google-flag:conference',
+        'a=ssrc-group:SIM 1 2 3',
+        'a=ssrc:1 cname:localVideo',
+        'a=ssrc:1 msid:' + videoStream.id + ' ' + videoTracks[0].id,
+        'a=ssrc:1 mslabel:' + videoStream.id,
+        'a=ssrc:1 label:' + videoTracks[0].id,
+        'a=ssrc:2 cname:localVideo',
+        'a=ssrc:2 msid:' + videoStream.id + ' ' + videoTracks[0].id,
+        'a=ssrc:2 mslabel:' + videoStream.id,
+        'a=ssrc:2 label:' + videoTracks[0].id,
+        'a=ssrc:3 cname:localVideo',
+        'a=ssrc:3 msid:' + videoStream.id + ' ' + videoTracks[0].id,
+        'a=ssrc:3 mslabel:' + videoStream.id,
+        'a=ssrc:3 label:' + videoTracks[0].id
+    ];
+    lines.push('');
+    return lines.join('\n');
+}
+/**
+ * Wrapper object of an RTCPeerConnection. This object is aimed to simplify the
+ * development of WebRTC-based applications.
+ *
+ * @constructor module:kurentoUtils.WebRtcPeer
+ *
+ * @param {String} mode Mode in which the PeerConnection will be configured.
+ *  Valid values are: 'recv', 'send', and 'sendRecv'
+ * @param localVideo Video tag for the local stream
+ * @param remoteVideo Video tag for the remote stream
+ * @param {MediaStream} videoStream Stream to be used as primary source
+ *  (typically video and audio, or only video if combined with audioStream) for
+ *  localVideo and to be added as stream to the RTCPeerConnection
+ * @param {MediaStream} audioStream Stream to be used as second source
+ *  (typically for audio) for localVideo and to be added as stream to the
+ *  RTCPeerConnection
+ */
+function WebRtcPeer(mode, options, callback) {
+    if (!(this instanceof WebRtcPeer)) {
+        return new WebRtcPeer(mode, options, callback);
+    }
+    WebRtcPeer.super_.call(this);
+    if (options instanceof Function) {
+        callback = options;
+        options = undefined;
+    }
+    options = options || {};
+    callback = (callback || noop).bind(this);
+    var self = this;
+    var localVideo = options.localVideo;
+    var remoteVideo = options.remoteVideo;
+    var videoStream = options.videoStream;
+    var audioStream = options.audioStream;
+    var mediaConstraints = options.mediaConstraints;
+    var connectionConstraints = options.connectionConstraints;
+    var pc = options.peerConnection;
+    var sendSource = options.sendSource || 'webcam';
+    var dataChannelConfig = options.dataChannelConfig;
+    var useDataChannels = options.dataChannels || false;
+    var dataChannel;
+    var guid = uuid.v4();
+    var configuration = recursive({
+        iceServers: freeice()
+    }, options.configuration);
+    var onicecandidate = options.onicecandidate;
+    if (onicecandidate)
+        this.on('icecandidate', onicecandidate);
+    var oncandidategatheringdone = options.oncandidategatheringdone;
+    if (oncandidategatheringdone) {
+        this.on('candidategatheringdone', oncandidategatheringdone);
+    }
+    var simulcast = options.simulcast;
+    var multistream = options.multistream;
+    var interop = new sdpTranslator.Interop();
+    var candidatesQueueOut = [];
+    var candidategatheringdone = false;
+    Object.defineProperties(this, {
+        'peerConnection': {
+            get: function () {
+                return pc;
+            }
+        },
+        'id': {
+            value: options.id || guid,
+            writable: false
+        },
+        'remoteVideo': {
+            get: function () {
+                return remoteVideo;
+            }
+        },
+        'localVideo': {
+            get: function () {
+                return localVideo;
+            }
+        },
+        'dataChannel': {
+            get: function () {
+                return dataChannel;
+            }
+        },
+        /**
+         * @member {(external:ImageData|undefined)} currentFrame
+         */
+        'currentFrame': {
+            get: function () {
+                // [ToDo] Find solution when we have a remote stream but we didn't set
+                // a remoteVideo tag
+                if (!remoteVideo)
+                    return;
+                if (remoteVideo.readyState < remoteVideo.HAVE_CURRENT_DATA)
+                    throw new Error('No video stream data available');
+                var canvas = document.createElement('canvas');
+                canvas.width = remoteVideo.videoWidth;
+                canvas.height = remoteVideo.videoHeight;
+                canvas.getContext('2d').drawImage(remoteVideo, 0, 0);
+                return canvas;
+            }
+        }
+    });
+    // Init PeerConnection
+    if (!pc) {
+        pc = new RTCPeerConnection(configuration);
+        if (useDataChannels && !dataChannel) {
+            var dcId = 'WebRtcPeer-' + self.id;
+            var dcOptions = undefined;
+            if (dataChannelConfig) {
+                dcId = dataChannelConfig.id || dcId;
+                dcOptions = dataChannelConfig.options;
+            }
+            dataChannel = pc.createDataChannel(dcId, dcOptions);
+            if (dataChannelConfig) {
+                dataChannel.onopen = dataChannelConfig.onopen;
+                dataChannel.onclose = dataChannelConfig.onclose;
+                dataChannel.onmessage = dataChannelConfig.onmessage;
+                dataChannel.onbufferedamountlow = dataChannelConfig.onbufferedamountlow;
+                dataChannel.onerror = dataChannelConfig.onerror || noop;
+            }
+        }
+    }
+    pc.addEventListener('icecandidate', function (event) {
+        var candidate = event.candidate;
+        if (EventEmitter.listenerCount(self, 'icecandidate') ||
+            EventEmitter.listenerCount(self, 'candidategatheringdone')) {
+            if (candidate) {
+                var cand;
+                if (multistream && usePlanB) {
+                    cand = interop.candidateToUnifiedPlan(candidate);
+                }
+                else {
+                    cand = candidate;
+                }
+                self.emit('icecandidate', cand);
+                candidategatheringdone = false;
+            }
+            else if (!candidategatheringdone) {
+                self.emit('candidategatheringdone');
+                candidategatheringdone = true;
+            }
+        }
+        else if (!candidategatheringdone) {
+            // Not listening to 'icecandidate' or 'candidategatheringdone' events, queue
+            // the candidate until one of them is listened
+            candidatesQueueOut.push(candidate);
+            if (!candidate)
+                candidategatheringdone = true;
+        }
+    });
+    pc.ontrack = options.onaddstream;
+    pc.onnegotiationneeded = options.onnegotiationneeded;
+    this.on('newListener', function (event, listener) {
+        if (event === 'icecandidate' || event === 'candidategatheringdone') {
+            while (candidatesQueueOut.length) {
+                var candidate = candidatesQueueOut.shift();
+                if (!candidate === (event === 'candidategatheringdone')) {
+                    listener(candidate);
+                }
+            }
+        }
+    });
+    var addIceCandidate = bufferizeCandidates(pc);
+    /**
+     * Callback function invoked when an ICE candidate is received. Developers are
+     * expected to invoke this function in order to complete the SDP negotiation.
+     *
+     * @function module:kurentoUtils.WebRtcPeer.prototype.addIceCandidate
+     *
+     * @param iceCandidate - Literal object with the ICE candidate description
+     * @param callback - Called when the ICE candidate has been added.
+     */
+    this.addIceCandidate = function (iceCandidate, callback) {
+        var candidate;
+        if (multistream && usePlanB) {
+            candidate = interop.candidateToPlanB(iceCandidate);
+        }
+        else {
+            candidate = new RTCIceCandidate(iceCandidate);
+        }
+        logger.debug('Remote ICE candidate received', iceCandidate);
+        callback = (callback || noop).bind(this);
+        addIceCandidate(candidate, callback);
+    };
+    this.generateOffer = function (callback) {
+        callback = callback.bind(this);
+        var offerAudio = true;
+        var offerVideo = true;
+        // Constraints must have both blocks
+        if (mediaConstraints) {
+            offerAudio = (typeof mediaConstraints.audio === 'boolean') ?
+                mediaConstraints.audio : true;
+            offerVideo = (typeof mediaConstraints.video === 'boolean') ?
+                mediaConstraints.video : true;
+        }
+        var browserDependantConstraints = {
+            offerToReceiveAudio: (mode !== 'sendonly' && offerAudio),
+            offerToReceiveVideo: (mode !== 'sendonly' && offerVideo)
+        };
+        //FIXME: clarify possible constraints passed to createOffer()
+        /*var constraints = recursive(browserDependantConstraints,
+          connectionConstraints)*/
+        var constraints = browserDependantConstraints;
+        logger.debug('constraints: ' + JSON.stringify(constraints));
+        pc.createOffer(constraints).then(function (offer) {
+            logger.debug('Created SDP offer');
+            offer = mangleSdpToAddSimulcast(offer);
+            return pc.setLocalDescription(offer);
+        }).then(function () {
+            var localDescription = pc.localDescription;
+            logger.debug('Local description set', localDescription.sdp);
+            if (multistream && usePlanB) {
+                localDescription = interop.toUnifiedPlan(localDescription);
+                logger.debug('offer::origPlanB->UnifiedPlan', dumpSDP(localDescription));
+            }
+            callback(null, localDescription.sdp, self.processAnswer.bind(self));
+        }).catch(callback);
+    };
+    this.getLocalSessionDescriptor = function () {
+        return pc.localDescription;
+    };
+    this.getRemoteSessionDescriptor = function () {
+        return pc.remoteDescription;
+    };
+    function setRemoteVideo() {
+        if (remoteVideo) {
+            var stream = pc.getRemoteStreams()[0];
+            var url = stream ? URL.createObjectURL(stream) : '';
+            remoteVideo.pause();
+            remoteVideo.src = url;
+            remoteVideo.load();
+            logger.debug('Remote URL:', url);
+        }
+    }
+    this.showLocalVideo = function () {
+        localVideo.src = URL.createObjectURL(videoStream);
+        localVideo.muted = true;
+    };
+    this.send = function (data) {
+        if (dataChannel && dataChannel.readyState === 'open') {
+            dataChannel.send(data);
+        }
+        else {
+            logger.warn('Trying to send data over a non-existing or closed data channel');
+        }
+    };
+    /**
+     * Callback function invoked when a SDP answer is received. Developers are
+     * expected to invoke this function in order to complete the SDP negotiation.
+     *
+     * @function module:kurentoUtils.WebRtcPeer.prototype.processAnswer
+     *
+     * @param sdpAnswer - Description of sdpAnswer
+     * @param callback -
+     *            Invoked after the SDP answer is processed, or there is an error.
+     */
+    this.processAnswer = function (sdpAnswer, callback) {
+        callback = (callback || noop).bind(this);
+        var answer = new RTCSessionDescription({
+            type: 'answer',
+            sdp: sdpAnswer
+        });
+        if (multistream && usePlanB) {
+            var planBAnswer = interop.toPlanB(answer);
+            logger.debug('asnwer::planB', dumpSDP(planBAnswer));
+            answer = planBAnswer;
+        }
+        logger.debug('SDP answer received, setting remote description');
+        if (pc.signalingState === 'closed') {
+            return callback('PeerConnection is closed');
+        }
+        pc.setRemoteDescription(answer, function () {
+            setRemoteVideo();
+            callback();
+        }, callback);
+    };
+    /**
+     * Callback function invoked when a SDP offer is received. Developers are
+     * expected to invoke this function in order to complete the SDP negotiation.
+     *
+     * @function module:kurentoUtils.WebRtcPeer.prototype.processOffer
+     *
+     * @param sdpOffer - Description of sdpOffer
+     * @param callback - Called when the remote description has been set
+     *  successfully.
+     */
+    this.processOffer = function (sdpOffer, callback) {
+        callback = callback.bind(this);
+        var offer = new RTCSessionDescription({
+            type: 'offer',
+            sdp: sdpOffer
+        });
+        if (multistream && usePlanB) {
+            var planBOffer = interop.toPlanB(offer);
+            logger.debug('offer::planB', dumpSDP(planBOffer));
+            offer = planBOffer;
+        }
+        logger.debug('SDP offer received, setting remote description');
+        if (pc.signalingState === 'closed') {
+            return callback('PeerConnection is closed');
+        }
+        pc.setRemoteDescription(offer).then(function () {
+            return setRemoteVideo();
+        }).then(function () {
+            return pc.createAnswer();
+        }).then(function (answer) {
+            answer = mangleSdpToAddSimulcast(answer);
+            logger.debug('Created SDP answer');
+            return pc.setLocalDescription(answer);
+        }).then(function () {
+            var localDescription = pc.localDescription;
+            if (multistream && usePlanB) {
+                localDescription = interop.toUnifiedPlan(localDescription);
+                logger.debug('answer::origPlanB->UnifiedPlan', dumpSDP(localDescription));
+            }
+            logger.debug('Local description set', localDescription.sdp);
+            callback(null, localDescription.sdp);
+        }).catch(callback);
+    };
+    function mangleSdpToAddSimulcast(answer) {
+        if (simulcast) {
+            if (browser.name === 'Chrome' || browser.name === 'Chromium') {
+                logger.debug('Adding multicast info');
+                answer = new RTCSessionDescription({
+                    'type': answer.type,
+                    'sdp': removeFIDFromOffer(answer.sdp) + getSimulcastInfo(videoStream)
+                });
+            }
+            else {
+                logger.warn('Simulcast is only available in Chrome browser.');
+            }
+        }
+        return answer;
+    }
+    /**
+     * This function creates the RTCPeerConnection object taking into account the
+     * properties received in the constructor. It starts the SDP negotiation
+     * process: generates the SDP offer and invokes the onsdpoffer callback. This
+     * callback is expected to send the SDP offer, in order to obtain an SDP
+     * answer from another peer.
+     */
+    function start() {
+        if (pc.signalingState === 'closed') {
+            callback('The peer connection object is in "closed" state. This is most likely due to an invocation of the dispose method before accepting in the dialogue');
+        }
+        if (videoStream && localVideo) {
+            self.showLocalVideo();
+        }
+        if (videoStream) {
+            pc.addStream(videoStream);
+        }
+        if (audioStream) {
+            pc.addStream(audioStream);
+        }
+        // [Hack] https://code.google.com/p/chromium/issues/detail?id=443558
+        var browser = parser.getBrowser();
+        if (mode === 'sendonly' &&
+            (browser.name === 'Chrome' || browser.name === 'Chromium') &&
+            browser.major === 39) {
+            mode = 'sendrecv';
+        }
+        callback();
+    }
+    if (mode !== 'recvonly' && !videoStream && !audioStream) {
+        function getMedia(constraints) {
+            if (constraints === undefined) {
+                constraints = MEDIA_CONSTRAINTS;
+            }
+            navigator.mediaDevices.getUserMedia(constraints).then(function (stream) {
+                videoStream = stream;
+                start();
+            }).catch(callback);
+        }
+        if (sendSource === 'webcam') {
+            getMedia(mediaConstraints);
+        }
+        else {
+            getScreenConstraints(sendSource, function (error, constraints_) {
+                if (error)
+                    return callback(error);
+                constraints = [mediaConstraints];
+                constraints.unshift(constraints_);
+                getMedia(recursive.apply(undefined, constraints));
+            }, guid);
+        }
+    }
+    else {
+        setTimeout(start, 0);
+    }
+    this.on('_dispose', function () {
+        if (localVideo) {
+            localVideo.pause();
+            localVideo.src = '';
+            localVideo.load();
+            //Unmute local video in case the video tag is later used for remote video
+            localVideo.muted = false;
+        }
+        if (remoteVideo) {
+            remoteVideo.pause();
+            remoteVideo.src = '';
+            remoteVideo.load();
+        }
+        self.removeAllListeners();
+        if (window.cancelChooseDesktopMedia !== undefined) {
+            window.cancelChooseDesktopMedia(guid);
+        }
+    });
+}
+inherits(WebRtcPeer, EventEmitter);
+function createEnableDescriptor(type) {
+    var method = 'get' + type + 'Tracks';
+    return {
+        enumerable: true,
+        get: function () {
+            // [ToDo] Should return undefined if not all tracks have the same value?
+            if (!this.peerConnection)
+                return;
+            var streams = this.peerConnection.getLocalStreams();
+            if (!streams.length)
+                return;
+            for (var i = 0, stream; stream = streams[i]; i++) {
+                var tracks = stream[method]();
+                for (var j = 0, track; track = tracks[j]; j++)
+                    if (!track.enabled)
+                        return false;
+            }
+            return true;
+        },
+        set: function (value) {
+            function trackSetEnable(track) {
+                track.enabled = value;
+            }
+            this.peerConnection.getLocalStreams().forEach(function (stream) {
+                stream[method]().forEach(trackSetEnable);
+            });
+        }
+    };
+}
+Object.defineProperties(WebRtcPeer.prototype, {
+    'enabled': {
+        enumerable: true,
+        get: function () {
+            return this.audioEnabled && this.videoEnabled;
+        },
+        set: function (value) {
+            this.audioEnabled = this.videoEnabled = value;
+        }
+    },
+    'audioEnabled': createEnableDescriptor('Audio'),
+    'videoEnabled': createEnableDescriptor('Video')
+});
+WebRtcPeer.prototype.getLocalStream = function (index) {
+    if (this.peerConnection) {
+        return this.peerConnection.getLocalStreams()[index || 0];
+    }
+};
+WebRtcPeer.prototype.getRemoteStream = function (index) {
+    if (this.peerConnection) {
+        return this.peerConnection.getRemoteStreams()[index || 0];
+    }
+};
+/**
+ * @description This method frees the resources used by WebRtcPeer.
+ *
+ * @function module:kurentoUtils.WebRtcPeer.prototype.dispose
+ */
+WebRtcPeer.prototype.dispose = function () {
+    logger.debug('Disposing WebRtcPeer');
+    var pc = this.peerConnection;
+    var dc = this.dataChannel;
+    try {
+        if (dc) {
+            if (dc.signalingState === 'closed')
+                return;
+            dc.close();
+        }
+        if (pc) {
+            if (pc.signalingState === 'closed')
+                return;
+            pc.getLocalStreams().forEach(streamStop);
+            // FIXME This is not yet implemented in firefox
+            // if(videoStream) pc.removeStream(videoStream);
+            // if(audioStream) pc.removeStream(audioStream);
+            pc.close();
+        }
+    }
+    catch (err) {
+        logger.warn('Exception disposing webrtc peer ' + err);
+    }
+    this.emit('_dispose');
+};
+//
+// Specialized child classes
+//
+function WebRtcPeerRecvonly(options, callback) {
+    if (!(this instanceof WebRtcPeerRecvonly)) {
+        return new WebRtcPeerRecvonly(options, callback);
+    }
+    WebRtcPeerRecvonly.super_.call(this, 'recvonly', options, callback);
+}
+inherits(WebRtcPeerRecvonly, WebRtcPeer);
+function WebRtcPeerSendonly(options, callback) {
+    if (!(this instanceof WebRtcPeerSendonly)) {
+        return new WebRtcPeerSendonly(options, callback);
+    }
+    WebRtcPeerSendonly.super_.call(this, 'sendonly', options, callback);
+}
+inherits(WebRtcPeerSendonly, WebRtcPeer);
+function WebRtcPeerSendrecv(options, callback) {
+    if (!(this instanceof WebRtcPeerSendrecv)) {
+        return new WebRtcPeerSendrecv(options, callback);
+    }
+    WebRtcPeerSendrecv.super_.call(this, 'sendrecv', options, callback);
+}
+inherits(WebRtcPeerSendrecv, WebRtcPeer);
+function harkUtils(stream, options) {
+    return hark(stream, options);
+}
+exports.bufferizeCandidates = bufferizeCandidates;
+exports.WebRtcPeerRecvonly = WebRtcPeerRecvonly;
+exports.WebRtcPeerSendonly = WebRtcPeerSendonly;
+exports.WebRtcPeerSendrecv = WebRtcPeerSendrecv;
+exports.hark = harkUtils;
+//# sourceMappingURL=WebRtcPeer.js.map
+
+/***/ }),
+/* 207 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/*
+ * (C) Copyright 2014 Kurento (http://kurento.org/)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+/**
+ * This module contains a set of reusable components that have been found useful
+ * during the development of the WebRTC applications with Kurento.
+ *
+ * @module kurentoUtils
+ *
+ * @copyright 2014 Kurento (http://kurento.org/)
+ * @license ALv2
+ */
+var WebRtcPeer = __webpack_require__(206);
+exports.WebRtcPeer = WebRtcPeer;
+//# sourceMappingURL=index.js.map
+
+/***/ }),
+/* 208 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+/*
+ * (C) Copyright 2017 OpenVidu (http://openvidu.io/)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+var OpenViduInternal_1 = __webpack_require__(210);
+var Session_1 = __webpack_require__(97);
+var Publisher_1 = __webpack_require__(96);
+var OpenViduError_1 = __webpack_require__(63);
+var adapter = __webpack_require__(119);
+var screenSharingAuto = __webpack_require__(212);
+if (window) {
+    window["adapter"] = adapter;
+}
+var OpenVidu = /** @class */ (function () {
+    function OpenVidu() {
+        this.openVidu = new OpenViduInternal_1.OpenViduInternal();
+        console.info("'OpenVidu' initialized");
+    }
+    ;
+    OpenVidu.prototype.initSession = function (param1, param2) {
+        if (this.checkSystemRequirements()) {
+            if (typeof param2 == "string") {
+                return new Session_1.Session(this.openVidu.initSession(param2), this);
+            }
+            else {
+                return new Session_1.Session(this.openVidu.initSession(param1), this);
+            }
+        }
+        else {
+            alert("Browser not supported");
+        }
+    };
+    OpenVidu.prototype.initPublisher = function (parentId, cameraOptions, callback) {
+        if (this.checkSystemRequirements()) {
+            var publisher_1;
+            if (cameraOptions != null) {
+                if (!cameraOptions.screen) {
+                    // Webcam and/or microphone is being requested
+                    var cameraOptionsAux = {
+                        sendAudio: cameraOptions.audio != null ? cameraOptions.audio : true,
+                        sendVideo: cameraOptions.video != null ? cameraOptions.video : true,
+                        activeAudio: cameraOptions.activeAudio != null ? cameraOptions.activeAudio : true,
+                        activeVideo: cameraOptions.activeVideo != null ? cameraOptions.activeVideo : true,
+                        data: true,
+                        mediaConstraints: this.openVidu.generateMediaConstraints(cameraOptions)
+                    };
+                    cameraOptions = cameraOptionsAux;
+                    publisher_1 = new Publisher_1.Publisher(this.openVidu.initPublisherTagged(parentId, cameraOptions, callback), parentId, false);
+                    console.info("'Publisher' initialized");
+                    return publisher_1;
+                }
+                else {
+                    if (adapter.browserDetails.browser === 'firefox' && adapter.browserDetails.version >= 52) {
+                        publisher_1 = new Publisher_1.Publisher(this.openVidu.initPublisherScreen(parentId, callback), parentId, true);
+                        screenSharingAuto.getScreenId(function (error, sourceId, screenConstraints) {
+                            cameraOptions = {
+                                sendAudio: cameraOptions.audio != null ? cameraOptions.audio : true,
+                                sendVideo: cameraOptions.video != null ? cameraOptions.video : true,
+                                activeAudio: cameraOptions.activeAudio != null ? cameraOptions.activeAudio : true,
+                                activeVideo: cameraOptions.activeVideo != null ? cameraOptions.activeVideo : true,
+                                data: true,
+                                mediaConstraints: {
+                                    video: screenConstraints.video,
+                                    audio: false
+                                }
+                            };
+                            publisher_1.stream.configureScreenOptions(cameraOptions);
+                            console.info("'Publisher' initialized");
+                        });
+                        return publisher_1;
+                    }
+                    else if (adapter.browserDetails.browser === 'chrome') {
+                        // Screen is being requested
+                        /*screenSharing.isChromeExtensionAvailable((availability) => {
+                            switch (availability) {
+                                case 'available':
+                                    console.warn('EXTENSION AVAILABLE!!!');
+                                    screenSharing.getScreenConstraints((error, screenConstraints) => {
+                                        if (!error) {
+                                            console.warn(screenConstraints);
+                                        }
+                                    });
+                                    break;
+                                case 'unavailable':
+                                    console.warn('EXTENSION NOT AVAILABLE!!!');
+                                    break;
+                                case 'isFirefox':
+                                    console.warn('IT IS FIREFOX!!!');
+                                    screenSharing.getScreenConstraints((error, screenConstraints) => {
+                                        if (!error) {
+                                            console.warn(screenConstraints);
+                                        }
+                                    });
+                                    break;
+                            }
+                        });*/
+                        screenSharingAuto.getScreenId(function (error, sourceId, screenConstraints) {
+                            if (error === 'not-installed') {
+                                var error_1 = new OpenViduError_1.OpenViduError(OpenViduError_1.OpenViduErrorName.SCREEN_EXTENSION_NOT_INSTALLED, 'https://chrome.google.com/webstore/detail/screen-capturing/ajhifddimkapgcifgcodmmfdlknahffk');
+                                console.error(error_1);
+                                if (callback)
+                                    callback(error_1);
+                                return;
+                            }
+                            else if (error === 'permission-denied') {
+                                var error_2 = new OpenViduError_1.OpenViduError(OpenViduError_1.OpenViduErrorName.SCREEN_CAPTURE_DENIED, 'You must allow access to one window of your desktop');
+                                console.error(error_2);
+                                if (callback)
+                                    callback(error_2);
+                                return;
+                            }
+                            cameraOptions = {
+                                sendAudio: cameraOptions.audio != null ? cameraOptions.audio : true,
+                                sendVideo: cameraOptions.video != null ? cameraOptions.video : true,
+                                activeAudio: cameraOptions.activeAudio != null ? cameraOptions.activeAudio : true,
+                                activeVideo: cameraOptions.activeVideo != null ? cameraOptions.activeVideo : true,
+                                data: true,
+                                mediaConstraints: {
+                                    video: screenConstraints.video,
+                                    audio: false
+                                }
+                            };
+                            publisher_1.stream.configureScreenOptions(cameraOptions);
+                        }, function (error) {
+                            console.error('getScreenId error', error);
+                            return;
+                        });
+                        publisher_1 = new Publisher_1.Publisher(this.openVidu.initPublisherScreen(parentId, callback), parentId, true);
+                        console.info("'Publisher' initialized");
+                        return publisher_1;
+                    }
+                    else {
+                        console.error('Screen sharing not supported on ' + adapter.browserDetails.browser);
+                    }
+                }
+            }
+            else {
+                cameraOptions = {
+                    sendAudio: true,
+                    sendVideo: true,
+                    activeAudio: true,
+                    activeVideo: true,
+                    data: true,
+                    mediaConstraints: {
+                        audio: true,
+                        video: { width: { ideal: 1280 } }
+                    }
+                };
+                publisher_1 = new Publisher_1.Publisher(this.openVidu.initPublisherTagged(parentId, cameraOptions, callback), parentId, false);
+                console.info("'Publisher' initialized");
+                return publisher_1;
+            }
+        }
+        else {
+            alert("Browser not supported");
+        }
+    };
+    OpenVidu.prototype.checkSystemRequirements = function () {
+        var browser = adapter.browserDetails.browser;
+        var version = adapter.browserDetails.version;
+        //Bug fix: 'navigator.userAgent' in Firefox for Ubuntu 14.04 does not return "Firefox/[version]" in the string, so version returned is null
+        if ((browser == 'firefox') && (version == null)) {
+            return 1;
+        }
+        if (((browser == 'chrome') && (version >= 28)) || ((browser == 'edge') && (version >= 12)) || ((browser == 'firefox') && (version >= 22))) {
+            return 1;
+        }
+        else {
+            return 0;
+        }
+    };
+    OpenVidu.prototype.getDevices = function (callback) {
+        navigator.mediaDevices.enumerateDevices().then(function (deviceInfos) {
+            callback(null, deviceInfos);
+        }).catch(function (error) {
+            console.error("Error getting devices", error);
+            callback(error, null);
+        });
+    };
+    OpenVidu.prototype.enableProdMode = function () {
+        console.log = function () { };
+        console.debug = function () { };
+        console.info = function () { };
+        console.warn = function () { };
+    };
+    return OpenVidu;
+}());
+exports.OpenVidu = OpenVidu;
+//# sourceMappingURL=OpenVidu.js.map
+
+/***/ }),
+/* 209 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+function __export(m) {
+    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+}
+Object.defineProperty(exports, "__esModule", { value: true });
+__export(__webpack_require__(208));
+__export(__webpack_require__(97));
+__export(__webpack_require__(96));
+__export(__webpack_require__(98));
+__export(__webpack_require__(64));
+__export(__webpack_require__(99));
+//# sourceMappingURL=index.js.map
+
+/***/ }),
+/* 210 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+/*
+ * (C) Copyright 2017 OpenVidu (http://openvidu.io/)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+var SessionInternal_1 = __webpack_require__(211);
+var OpenViduError_1 = __webpack_require__(63);
+var Stream_1 = __webpack_require__(64);
+var RpcBuilder = __webpack_require__(95);
+var OpenViduInternal = /** @class */ (function () {
+    function OpenViduInternal() {
+        this.remoteStreams = [];
+    }
+    ;
+    /* NEW METHODS */
+    OpenViduInternal.prototype.initSession = function (sessionId) {
+        console.info("'Session' initialized with 'sessionId' [" + sessionId + "]");
+        this.session = new SessionInternal_1.SessionInternal(this, sessionId);
+        return this.session;
+    };
+    OpenViduInternal.prototype.initPublisherTagged = function (parentId, cameraOptions, callback) {
+        var _this = this;
+        this.getCamera(cameraOptions);
+        this.camera.requestCameraAccess(function (error, camera) {
+            if (error) {
+                // Neither camera or microphone device is allowed/able to capture media
+                console.error(error);
+                if (callback) {
+                    callback(error);
+                }
+                _this.camera.ee.emitEvent('access-denied-by-publisher');
+            }
+            else {
+                _this.camera.setVideoElement(_this.cameraReady(camera, parentId));
+                if (callback) {
+                    callback(undefined);
+                }
+            }
+        });
+        return this.camera;
+    };
+    OpenViduInternal.prototype.initPublisherScreen = function (parentId, callback) {
+        var _this = this;
+        this.camera = new Stream_1.Stream(this, true, this.session, 'screen-options');
+        this.camera.addOnceEventListener('can-request-screen', function () {
+            _this.camera.requestCameraAccess(function (error, camera) {
+                if (error) {
+                    _this.camera.ee.emitEvent('access-denied-by-publisher');
+                    var errorName = OpenViduError_1.OpenViduErrorName.SCREEN_CAPTURE_DENIED;
+                    var errorMessage = 'You must allow access to one window of your desktop';
+                    var e = new OpenViduError_1.OpenViduError(errorName, errorMessage);
+                    console.error(e);
+                    if (callback) {
+                        callback(e);
+                    }
+                }
+                else {
+                    _this.camera.setVideoElement(_this.cameraReady(camera, parentId));
+                    if (_this.camera.getSendAudio()) {
+                        // If the user wants to send audio with the screen capturing
+                        navigator.mediaDevices.getUserMedia({ audio: true, video: false })
+                            .then(function (userStream) {
+                            _this.camera.getWrStream().addTrack(userStream.getAudioTracks()[0]);
+                            _this.camera.isScreenRequestedReady = true;
+                            _this.camera.ee.emitEvent('screen-ready');
+                            if (callback) {
+                                callback(undefined);
+                            }
+                        })
+                            .catch(function (error) {
+                            _this.camera.ee.emitEvent('access-denied-by-publisher');
+                            console.error("Error accessing the microphone", error);
+                            if (callback) {
+                                var errorName = OpenViduError_1.OpenViduErrorName.MICROPHONE_ACCESS_DENIED;
+                                var errorMessage = error.toString();
+                                callback(new OpenViduError_1.OpenViduError(errorName, errorMessage));
+                            }
+                        });
+                    }
+                    else {
+                        _this.camera.isScreenRequestedReady = true;
+                        _this.camera.ee.emitEvent('screen-ready');
+                        if (callback) {
+                            callback(undefined);
+                        }
+                    }
+                }
+            });
+        });
+        return this.camera;
+    };
+    OpenViduInternal.prototype.cameraReady = function (camera, parentId) {
+        this.camera = camera;
+        var videoElement = this.camera.playOnlyVideo(parentId, null);
+        this.camera.emitStreamReadyEvent();
+        return videoElement;
+    };
+    OpenViduInternal.prototype.initPublisher = function (cameraOptions, callback) {
+        this.getCamera(cameraOptions);
+        this.camera.requestCameraAccess(function (error, camera) {
+            if (error)
+                callback(error);
+            else
+                callback(undefined);
+        });
+    };
+    OpenViduInternal.prototype.getLocalStream = function () {
+        return this.camera;
+    };
+    OpenViduInternal.prototype.getRemoteStreams = function () {
+        return this.remoteStreams;
+    };
+    /* NEW METHODS */
+    OpenViduInternal.prototype.getWsUri = function () {
+        return this.wsUri;
+    };
+    OpenViduInternal.prototype.setWsUri = function (wsUri) {
+        this.wsUri = wsUri;
+    };
+    OpenViduInternal.prototype.getSecret = function () {
+        return this.secret;
+    };
+    OpenViduInternal.prototype.setSecret = function (secret) {
+        this.secret = secret;
+    };
+    OpenViduInternal.prototype.getOpenViduServerURL = function () {
+        return 'https://' + this.wsUri.split("wss://")[1].split("/room")[0];
+    };
+    OpenViduInternal.prototype.getRoom = function () {
+        return this.session;
+    };
+    OpenViduInternal.prototype.connect = function (callback) {
+        this.callback = callback;
+        this.initJsonRpcClient(this.wsUri);
+    };
+    OpenViduInternal.prototype.initJsonRpcClient = function (wsUri) {
+        var config = {
+            heartbeat: 3000,
+            sendCloseMessage: false,
+            ws: {
+                uri: wsUri,
+                useSockJS: false,
+                onconnected: this.connectCallback.bind(this),
+                ondisconnect: this.disconnectCallback.bind(this),
+                onreconnecting: this.reconnectingCallback.bind(this),
+                onreconnected: this.reconnectedCallback.bind(this)
+            },
+            rpc: {
+                requestTimeout: 15000,
+                //notifications
+                participantJoined: this.onParticipantJoined.bind(this),
+                participantPublished: this.onParticipantPublished.bind(this),
+                participantUnpublished: this.onParticipantLeft.bind(this),
+                participantLeft: this.onParticipantLeft.bind(this),
+                participantEvicted: this.onParticipantEvicted.bind(this),
+                sendMessage: this.onNewMessage.bind(this),
+                iceCandidate: this.iceCandidateEvent.bind(this),
+                mediaError: this.onMediaError.bind(this),
+                custonNotification: this.customNotification.bind(this)
+            }
+        };
+        this.jsonRpcClient = new RpcBuilder.clients.JsonRpcClient(config);
+    };
+    OpenViduInternal.prototype.customNotification = function (params) {
+        if (this.isRoomAvailable()) {
+            this.session.emitEvent("custom-message-received", [{ params: params }]);
+        }
+    };
+    OpenViduInternal.prototype.connectCallback = function (error) {
+        if (error) {
+            this.callback(error);
+        }
+        else {
+            this.callback(null);
+        }
+    };
+    OpenViduInternal.prototype.isRoomAvailable = function () {
+        if (this.session !== undefined && this.session instanceof SessionInternal_1.SessionInternal) {
+            return true;
+        }
+        else {
+            console.warn('Room instance not found');
+            return false;
+        }
+    };
+    OpenViduInternal.prototype.disconnectCallback = function () {
+        console.warn('Websocket connection lost');
+        if (this.isRoomAvailable()) {
+            this.session.onLostConnection();
+        }
+        else {
+            alert('Connection error. Please reload page.');
+        }
+    };
+    OpenViduInternal.prototype.reconnectingCallback = function () {
+        console.warn('Websocket connection lost (reconnecting)');
+        if (this.isRoomAvailable()) {
+            this.session.onLostConnection();
+        }
+        else {
+            alert('Connection error. Please reload page.');
+        }
+    };
+    OpenViduInternal.prototype.reconnectedCallback = function () {
+        console.warn('Websocket reconnected');
+    };
+    OpenViduInternal.prototype.onParticipantJoined = function (params) {
+        if (this.isRoomAvailable()) {
+            this.session.onParticipantJoined(params);
+        }
+    };
+    OpenViduInternal.prototype.onParticipantPublished = function (params) {
+        if (this.isRoomAvailable()) {
+            this.session.onParticipantPublished(params);
+        }
+    };
+    OpenViduInternal.prototype.onParticipantLeft = function (params) {
+        if (this.isRoomAvailable()) {
+            this.session.onParticipantLeft(params);
+        }
+    };
+    OpenViduInternal.prototype.onParticipantEvicted = function (params) {
+        if (this.isRoomAvailable()) {
+            this.session.onParticipantEvicted(params);
+        }
+    };
+    OpenViduInternal.prototype.onNewMessage = function (params) {
+        if (this.isRoomAvailable()) {
+            this.session.onNewMessage(params);
+        }
+    };
+    OpenViduInternal.prototype.iceCandidateEvent = function (params) {
+        if (this.isRoomAvailable()) {
+            this.session.recvIceCandidate(params);
+        }
+    };
+    OpenViduInternal.prototype.onRoomClosed = function (params) {
+        if (this.isRoomAvailable()) {
+            this.session.onRoomClosed(params);
+        }
+    };
+    OpenViduInternal.prototype.onMediaError = function (params) {
+        if (this.isRoomAvailable()) {
+            this.session.onMediaError(params);
+        }
+    };
+    OpenViduInternal.prototype.setRpcParams = function (params) {
+        this.rpcParams = params;
+    };
+    OpenViduInternal.prototype.sendRequest = function (method, params, callback) {
+        if (params && params instanceof Function) {
+            callback = params;
+            params = undefined;
+        }
+        params = params || {};
+        if (this.rpcParams && this.rpcParams !== null && this.rpcParams !== undefined) {
+            for (var index in this.rpcParams) {
+                if (this.rpcParams.hasOwnProperty(index)) {
+                    params[index] = this.rpcParams[index];
+                    console.debug('RPC param added to request {' + index + ': ' + this.rpcParams[index] + '}');
+                }
+            }
+        }
+        console.debug('Sending request: {method:"' + method + '", params: ' + JSON.stringify(params) + '}');
+        this.jsonRpcClient.send(method, params, callback);
+    };
+    OpenViduInternal.prototype.close = function (forced) {
+        if (this.isRoomAvailable()) {
+            this.session.leave(forced, this.jsonRpcClient);
+        }
+    };
+    ;
+    OpenViduInternal.prototype.disconnectParticipant = function (stream) {
+        if (this.isRoomAvailable()) {
+            this.session.disconnect(stream);
+        }
+    };
+    OpenViduInternal.prototype.getCamera = function (options) {
+        if (this.camera) {
+            return this.camera;
+        }
+        options = options || {
+            sendAudio: true,
+            sendVideo: true,
+            activeAudio: true,
+            activeVideo: true,
+            data: true,
+            mediaConstraints: {
+                audio: true,
+                video: { width: { ideal: 1280 } }
+            }
+        };
+        options.connection = this.session.getLocalParticipant();
+        this.camera = new Stream_1.Stream(this, true, this.session, options);
+        return this.camera;
+    };
+    ;
+    //CHAT
+    OpenViduInternal.prototype.sendMessage = function (room, user, message) {
+        this.sendRequest('sendMessage', {
+            message: message,
+            userMessage: user,
+            roomMessage: room
+        }, function (error, response) {
+            if (error) {
+                console.error(error);
+            }
+        });
+    };
+    ;
+    OpenViduInternal.prototype.sendCustomRequest = function (params, callback) {
+        this.sendRequest('customRequest', params, callback);
+    };
+    ;
+    OpenViduInternal.prototype.toggleLocalVideoTrack = function (activate) {
+        this.getCamera().getWebRtcPeer().videoEnabled = activate;
+    };
+    OpenViduInternal.prototype.toggleLocalAudioTrack = function (activate) {
+        this.getCamera().getWebRtcPeer().audioEnabled = activate;
+    };
+    OpenViduInternal.prototype.publishLocalVideoAudio = function () {
+        this.toggleLocalVideoTrack(true);
+        this.toggleLocalAudioTrack(true);
+    };
+    OpenViduInternal.prototype.unpublishLocalVideoAudio = function () {
+        this.toggleLocalVideoTrack(false);
+        this.toggleLocalAudioTrack(false);
+    };
+    OpenViduInternal.prototype.generateMediaConstraints = function (cameraOptions) {
+        var mediaConstraints = {
+            audio: cameraOptions.audio,
+            video: {}
+        };
+        if (!cameraOptions.video) {
+            mediaConstraints.video = false;
+        }
+        else {
+            var w = void 0, h = void 0;
+            switch (cameraOptions.quality) {
+                case 'LOW':
+                    w = 320;
+                    h = 240;
+                    break;
+                case 'MEDIUM':
+                    w = 640;
+                    h = 480;
+                    break;
+                case 'HIGH':
+                    w = 1280;
+                    h = 720;
+                    break;
+                default:
+                    w = 640;
+                    h = 480;
+            }
+            mediaConstraints.video['width'] = { exact: w };
+            mediaConstraints.video['height'] = { exact: h };
+            //mediaConstraints.video['frameRate'] = { ideal: Number((<HTMLInputElement>document.getElementById('frameRate')).value) };
+        }
+        return mediaConstraints;
+    };
+    return OpenViduInternal;
+}());
+exports.OpenViduInternal = OpenViduInternal;
+//# sourceMappingURL=OpenViduInternal.js.map
+
+/***/ }),
+/* 211 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var Connection_1 = __webpack_require__(99);
+var EventEmitter = __webpack_require__(32);
+var SECRET_PARAM = '?secret=';
+var SessionInternal = /** @class */ (function () {
+    function SessionInternal(openVidu, sessionId) {
+        this.openVidu = openVidu;
+        this.ee = new EventEmitter();
+        this.streams = {};
+        this.participants = {};
+        this.participantsSpeaking = [];
+        this.connected = false;
+        this.sessionId = this.getUrlWithoutSecret(sessionId);
+        this.localParticipant = new Connection_1.Connection(this.openVidu, true, this);
+        if (!this.openVidu.getWsUri()) {
+            this.processOpenViduUrl(sessionId);
+        }
+    }
+    SessionInternal.prototype.processOpenViduUrl = function (url) {
+        this.openVidu.setSecret(this.getSecretFromUrl(url));
+        this.openVidu.setWsUri(this.getFinalUrl(url));
+    };
+    SessionInternal.prototype.getSecretFromUrl = function (url) {
+        var secret = '';
+        if (url.indexOf(SECRET_PARAM) !== -1) {
+            secret = url.substring(url.lastIndexOf(SECRET_PARAM) + SECRET_PARAM.length, url.length);
+        }
+        return secret;
+    };
+    SessionInternal.prototype.getUrlWithoutSecret = function (url) {
+        if (url.indexOf(SECRET_PARAM) !== -1) {
+            url = url.substring(0, url.lastIndexOf(SECRET_PARAM));
+        }
+        return url;
+    };
+    SessionInternal.prototype.getFinalUrl = function (url) {
+        url = this.getUrlWithoutSecret(url).substring(0, url.lastIndexOf('/')) + '/room';
+        if (url.indexOf(".ngrok.io") !== -1) {
+            // OpenVidu server URL referes to a ngrok IP: secure wss protocol and delete port of URL
+            url = url.replace("ws://", "wss://");
+            var regex = /\.ngrok\.io:\d+/;
+            url = url.replace(regex, ".ngrok.io");
+        }
+        else if ((url.indexOf("localhost") !== -1) || (url.indexOf("127.0.0.1") != -1)) {
+            // OpenVidu server URL referes to localhost IP
+        }
+        return url;
+    };
+    /* NEW METHODS */
+    SessionInternal.prototype.connect = function (token, callback) {
+        var _this = this;
+        this.openVidu.connect(function (error) {
+            if (error) {
+                callback('ERROR CONNECTING TO OPENVIDU');
+            }
+            else {
+                if (!token) {
+                    token = _this.randomToken();
+                }
+                var joinParams = {
+                    token: token,
+                    session: _this.sessionId,
+                    metadata: _this.options.metadata,
+                    secret: _this.openVidu.getSecret(),
+                    dataChannels: false
+                };
+                if (_this.localParticipant) {
+                    if (Object.keys(_this.localParticipant.getStreams()).some(function (streamId) {
+                        return _this.streams[streamId].isDataChannelEnabled();
+                    })) {
+                        joinParams.dataChannels = true;
+                    }
+                }
+                _this.openVidu.sendRequest('joinRoom', joinParams, function (error, response) {
+                    if (error) {
+                        callback(error);
+                    }
+                    else {
+                        _this.connected = true;
+                        var exParticipants = response.value;
+                        // IMPORTANT: Update connectionId with value send by server
+                        _this.localParticipant.connectionId = response.id;
+                        _this.participants[response.id] = _this.localParticipant;
+                        var roomEvent = {
+                            participants: new Array(),
+                            streams: new Array()
+                        };
+                        var length_1 = exParticipants.length;
+                        for (var i = 0; i < length_1; i++) {
+                            var connection = new Connection_1.Connection(_this.openVidu, false, _this, exParticipants[i]);
+                            connection.creationTime = new Date().getTime();
+                            _this.participants[connection.connectionId] = connection;
+                            roomEvent.participants.push(connection);
+                            var streams = connection.getStreams();
+                            for (var key in streams) {
+                                roomEvent.streams.push(streams[key]);
+                                if (_this.subscribeToStreams) {
+                                    streams[key].subscribe();
+                                }
+                            }
+                        }
+                        // Update local Connection object properties with values returned by server
+                        _this.localParticipant.data = response.metadata;
+                        _this.localParticipant.creationTime = new Date().getTime();
+                        // Updates the value of property 'connection' in Session object
+                        _this.ee.emitEvent('update-connection-object', [{ connection: _this.localParticipant }]);
+                        // Own connection created event
+                        _this.ee.emitEvent('connectionCreated', [{ connection: _this.localParticipant }]);
+                        // One connection created event for each existing connection in the session
+                        for (var _i = 0, _a = roomEvent.participants; _i < _a.length; _i++) {
+                            var part = _a[_i];
+                            _this.ee.emitEvent('connectionCreated', [{ connection: part }]);
+                        }
+                        //if (this.subscribeToStreams) {
+                        for (var _b = 0, _c = roomEvent.streams; _b < _c.length; _b++) {
+                            var stream = _c[_b];
+                            _this.ee.emitEvent('streamCreated', [{ stream: stream }]);
+                            // Adding the remote stream to the OpenVidu object
+                            _this.openVidu.getRemoteStreams().push(stream);
+                        }
+                        callback(undefined);
+                    }
+                });
+            }
+        });
+    };
+    SessionInternal.prototype.publish = function () {
+        this.openVidu.getCamera().publish();
+    };
+    /* NEW METHODS */
+    SessionInternal.prototype.configure = function (options) {
+        this.options = options;
+        this.id = options.sessionId;
+        this.subscribeToStreams = options.subscribeToStreams == null ? true : options.subscribeToStreams;
+        this.updateSpeakerInterval = options.updateSpeakerInterval || 1500;
+        this.thresholdSpeaker = options.thresholdSpeaker || -50;
+        this.activateUpdateMainSpeaker();
+    };
+    SessionInternal.prototype.getId = function () {
+        return this.id;
+    };
+    SessionInternal.prototype.getSessionId = function () {
+        return this.sessionId;
+    };
+    SessionInternal.prototype.activateUpdateMainSpeaker = function () {
+        var _this = this;
+        setInterval(function () {
+            if (_this.participantsSpeaking.length > 0) {
+                _this.ee.emitEvent('update-main-speaker', [{
+                        participantId: _this.participantsSpeaking[_this.participantsSpeaking.length - 1]
+                    }]);
+            }
+        }, this.updateSpeakerInterval);
+    };
+    SessionInternal.prototype.getLocalParticipant = function () {
+        return this.localParticipant;
+    };
+    SessionInternal.prototype.addEventListener = function (eventName, listener) {
+        this.ee.on(eventName, listener);
+    };
+    SessionInternal.prototype.addOnceEventListener = function (eventName, listener) {
+        this.ee.once(eventName, listener);
+    };
+    SessionInternal.prototype.removeListener = function (eventName, listener) {
+        this.ee.off(eventName, listener);
+    };
+    SessionInternal.prototype.removeEvent = function (eventName) {
+        this.ee.removeEvent(eventName);
+    };
+    SessionInternal.prototype.emitEvent = function (eventName, eventsArray) {
+        this.ee.emitEvent(eventName, eventsArray);
+    };
+    SessionInternal.prototype.subscribe = function (stream) {
+        stream.subscribe();
+    };
+    SessionInternal.prototype.unsuscribe = function (stream) {
+        console.info("Unsubscribing from " + stream.getId());
+        this.openVidu.sendRequest('unsubscribeFromVideo', {
+            sender: stream.getId()
+        }, function (error, response) {
+            if (error) {
+                console.error("Error unsubscribing from Subscriber", error);
+            }
+            else {
+                console.info("Unsubscribed correctly from " + stream.getId());
+            }
+        });
+    };
+    SessionInternal.prototype.onParticipantPublished = function (options) {
+        // Get the existing Connection created on 'onParticipantJoined' for
+        // existing participants or create a new one for new participants
+        var connection = this.participants[options.id];
+        if (connection) {
+            // Update existing Connection
+            options.metadata = connection.data;
+            connection.options = options;
+            connection.initStreams(options);
+        }
+        else {
+            // Create new Connection
+            connection = new Connection_1.Connection(this.openVidu, false, this, options);
+        }
+        var pid = connection.connectionId;
+        if (!(pid in this.participants)) {
+            console.debug("Remote Connection not found in connections list by its id [" + pid + "]");
+        }
+        else {
+            console.debug("Remote Connection found in connections list by its id [" + pid + "]");
+        }
+        this.participants[pid] = connection;
+        this.ee.emitEvent('participant-published', [{ connection: connection }]);
+        var streams = connection.getStreams();
+        for (var key in streams) {
+            var stream = streams[key];
+            if (this.subscribeToStreams) {
+                stream.subscribe();
+            }
+            this.ee.emitEvent('streamCreated', [{ stream: stream }]);
+            // Adding the remote stream to the OpenVidu object
+            this.openVidu.getRemoteStreams().push(stream);
+        }
+    };
+    SessionInternal.prototype.onParticipantJoined = function (msg) {
+        var connection = new Connection_1.Connection(this.openVidu, false, this, msg);
+        connection.creationTime = new Date().getTime();
+        var pid = connection.connectionId;
+        if (!(pid in this.participants)) {
+            this.participants[pid] = connection;
+        }
+        else {
+            //use existing so that we don't lose streams info
+            console.warn("Connection already exists in connections list with " +
+                "the same connectionId, old:", this.participants[pid], ", joined now:", connection);
+            connection = this.participants[pid];
+        }
+        this.ee.emitEvent('participant-joined', [{
+                connection: connection
+            }]);
+        this.ee.emitEvent('connectionCreated', [{
+                connection: connection
+            }]);
+    };
+    SessionInternal.prototype.onParticipantLeft = function (msg) {
+        var _this = this;
+        var connection = this.participants[msg.name];
+        if (connection !== undefined) {
+            delete this.participants[msg.name];
+            this.ee.emitEvent('participant-left', [{
+                    connection: connection
+                }]);
+            var streams = connection.getStreams();
+            for (var key in streams) {
+                this.ee.emitEvent('streamDestroyed', [{
+                        stream: streams[key],
+                        preventDefault: function () { _this.ee.removeEvent('stream-destroyed-default'); }
+                    }]);
+                this.ee.emitEvent('stream-destroyed-default', [{
+                        stream: streams[key]
+                    }]);
+                // Deleting the removed stream from the OpenVidu object
+                var index = this.openVidu.getRemoteStreams().indexOf(streams[key]);
+                this.openVidu.getRemoteStreams().splice(index, 1);
+            }
+            connection.dispose();
+            this.ee.emitEvent('connectionDestroyed', [{
+                    connection: connection
+                }]);
+        }
+        else {
+            console.warn("Participant " + msg.name
+                + " unknown. Participants: "
+                + JSON.stringify(this.participants));
+        }
+    };
+    ;
+    SessionInternal.prototype.onParticipantEvicted = function (msg) {
+        this.ee.emitEvent('participant-evicted', [{
+                localParticipant: this.localParticipant
+            }]);
+    };
+    ;
+    SessionInternal.prototype.onNewMessage = function (msg) {
+        console.info("New message: " + JSON.stringify(msg));
+        var room = msg.room;
+        var user = msg.user;
+        var message = msg.message;
+        if (user !== undefined) {
+            this.ee.emitEvent('newMessage', [{
+                    room: room,
+                    user: user,
+                    message: message
+                }]);
+        }
+        else {
+            console.warn("User undefined in new message:", msg);
+        }
+    };
+    SessionInternal.prototype.recvIceCandidate = function (msg) {
+        var candidate = {
+            candidate: msg.candidate,
+            sdpMid: msg.sdpMid,
+            sdpMLineIndex: msg.sdpMLineIndex
+        };
+        var connection = this.participants[msg.endpointName];
+        if (!connection) {
+            console.error("Participant not found for endpoint " +
+                msg.endpointName + ". Ice candidate will be ignored.", candidate);
+            return;
+        }
+        var streams = connection.getStreams();
+        var _loop_1 = function (key) {
+            var stream = streams[key];
+            stream.getWebRtcPeer().addIceCandidate(candidate, function (error) {
+                if (error) {
+                    console.error("Error adding candidate for " + key
+                        + " stream of endpoint " + msg.endpointName
+                        + ": " + error);
+                }
+            });
+        };
+        for (var key in streams) {
+            _loop_1(key);
+        }
+    };
+    SessionInternal.prototype.onRoomClosed = function (msg) {
+        console.info("Room closed: " + JSON.stringify(msg));
+        var room = msg.room;
+        if (room !== undefined) {
+            this.ee.emitEvent('room-closed', [{
+                    room: room
+                }]);
+        }
+        else {
+            console.warn("Room undefined in on room closed", msg);
+        }
+    };
+    SessionInternal.prototype.onLostConnection = function () {
+        if (!this.connected) {
+            console.warn('Not connected to room: if you are not debugging, this is probably a certificate error');
+            if (window.confirm('If you are not debugging, this is probably a certificate error at \"' + this.openVidu.getOpenViduServerURL() + '\"\n\nClick OK to navigate and accept it')) {
+                location.assign(this.openVidu.getOpenViduServerURL() + '/accept-certificate');
+            }
+            ;
+            return;
+        }
+        console.warn('Lost connection in Session ' + this.id);
+        var room = this.id;
+        if (room !== undefined) {
+            this.ee.emitEvent('lost-connection', [{ room: room }]);
+        }
+        else {
+            console.warn('Room undefined when lost connection');
+        }
+    };
+    SessionInternal.prototype.onMediaError = function (params) {
+        console.error("Media error: " + JSON.stringify(params));
+        var error = params.error;
+        if (error) {
+            this.ee.emitEvent('error-media', [{
+                    error: error
+                }]);
+        }
+        else {
+            console.warn("Received undefined media error. Params:", params);
+        }
+    };
+    /*
+     * forced means the user was evicted, no need to send the 'leaveRoom' request
+     */
+    SessionInternal.prototype.leave = function (forced, jsonRpcClient) {
+        forced = !!forced;
+        console.info("Leaving Session (forced=" + forced + ")");
+        if (this.connected && !forced) {
+            this.openVidu.sendRequest('leaveRoom', function (error, response) {
+                if (error) {
+                    console.error(error);
+                }
+                jsonRpcClient.close();
+            });
+        }
+        else {
+            jsonRpcClient.close();
+        }
+        this.connected = false;
+        if (this.participants) {
+            for (var pid in this.participants) {
+                this.participants[pid].dispose();
+                delete this.participants[pid];
+            }
+        }
+    };
+    SessionInternal.prototype.disconnect = function (stream) {
+        var connection = stream.getParticipant();
+        if (!connection) {
+            console.error("Stream to disconnect has no participant", stream);
+            return;
+        }
+        delete this.participants[connection.connectionId];
+        connection.dispose();
+        if (connection === this.localParticipant) {
+            console.info("Unpublishing my media (I'm " + connection.connectionId + ")");
+            delete this.localParticipant;
+            this.openVidu.sendRequest('unpublishVideo', function (error, response) {
+                if (error) {
+                    console.error(error);
+                }
+                else {
+                    console.info("Media unpublished correctly");
+                }
+            });
+        }
+        else {
+            this.unsuscribe(stream);
+        }
+    };
+    SessionInternal.prototype.unpublish = function (stream) {
+        var connection = stream.getParticipant();
+        if (!connection) {
+            console.error("Stream to disconnect has no participant", stream);
+            return;
+        }
+        if (connection === this.localParticipant) {
+            delete this.participants[connection.connectionId];
+            connection.dispose();
+            console.info("Unpublishing my media (I'm " + connection.connectionId + ")");
+            delete this.localParticipant;
+            this.openVidu.sendRequest('unpublishVideo', function (error, response) {
+                if (error) {
+                    console.error(error);
+                }
+                else {
+                    console.info("Media unpublished correctly");
+                }
+            });
+        }
+    };
+    SessionInternal.prototype.getStreams = function () {
+        return this.streams;
+    };
+    SessionInternal.prototype.addParticipantSpeaking = function (participantId) {
+        this.participantsSpeaking.push(participantId);
+    };
+    SessionInternal.prototype.removeParticipantSpeaking = function (participantId) {
+        var pos = -1;
+        for (var i = 0; i < this.participantsSpeaking.length; i++) {
+            if (this.participantsSpeaking[i] == participantId) {
+                pos = i;
+                break;
+            }
+        }
+        if (pos != -1) {
+            this.participantsSpeaking.splice(pos, 1);
+        }
+    };
+    SessionInternal.prototype.stringClientMetadata = function (metadata) {
+        if (!(typeof metadata === 'string')) {
+            return JSON.stringify(metadata);
+        }
+        else {
+            return metadata;
+        }
+    };
+    SessionInternal.prototype.randomToken = function () {
+        return Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
+    };
+    return SessionInternal;
+}());
+exports.SessionInternal = SessionInternal;
+//# sourceMappingURL=SessionInternal.js.map
+
+/***/ }),
+/* 212 */
+/***/ (function(module, exports) {
+
+// Last time updated at Feb 16, 2017, 08:32:23
+// Latest file can be found here: https://cdn.webrtc-experiment.com/getScreenId.js
+// Muaz Khan         - www.MuazKhan.com
+// MIT License       - www.WebRTC-Experiment.com/licence
+// Documentation     - https://github.com/muaz-khan/getScreenId.
+// ______________
+// getScreenId.js
+/*
+getScreenId(function (error, sourceId, screen_constraints) {
+    // error    == null || 'permission-denied' || 'not-installed' || 'installed-disabled' || 'not-chrome'
+    // sourceId == null || 'string' || 'firefox'
+    
+    if(sourceId == 'firefox') {
+        navigator.mozGetUserMedia(screen_constraints, onSuccess, onFailure);
+    }
+    else navigator.webkitGetUserMedia(screen_constraints, onSuccess, onFailure);
+});
+*/
+window.getScreenId = function (callback) {
+    // for Firefox:
+    // sourceId == 'firefox'
+    // screen_constraints = {...}
+    if (!!navigator.mozGetUserMedia) {
+        callback(null, 'firefox', {
+            video: {
+                mozMediaSource: 'window',
+                mediaSource: 'window'
+            }
+        });
+        return;
+    }
+    window.addEventListener('message', onIFrameCallback);
+    function onIFrameCallback(event) {
+        if (!event.data)
+            return;
+        if (event.data.chromeMediaSourceId) {
+            if (event.data.chromeMediaSourceId === 'PermissionDeniedError') {
+                callback('permission-denied');
+            }
+            else
+                callback(null, event.data.chromeMediaSourceId, getScreenConstraints(null, event.data.chromeMediaSourceId));
+        }
+        if (event.data.chromeExtensionStatus) {
+            callback(event.data.chromeExtensionStatus, null, getScreenConstraints(event.data.chromeExtensionStatus));
+        }
+        // this event listener is no more needed
+        window.removeEventListener('message', onIFrameCallback);
+    }
+    setTimeout(postGetSourceIdMessage, 100);
+};
+function getScreenConstraints(error, sourceId) {
+    var screen_constraints = {
+        audio: false,
+        video: {
+            mandatory: {
+                chromeMediaSource: error ? 'screen' : 'desktop',
+                maxWidth: window.screen.width > 1920 ? window.screen.width : 1920,
+                maxHeight: window.screen.height > 1080 ? window.screen.height : 1080
+            },
+            optional: []
+        }
+    };
+    if (sourceId) {
+        screen_constraints.video.mandatory.chromeMediaSourceId = sourceId;
+    }
+    return screen_constraints;
+}
+function postGetSourceIdMessage() {
+    if (!iframe) {
+        loadIFrame(postGetSourceIdMessage);
+        return;
+    }
+    if (!iframe.isLoaded) {
+        setTimeout(postGetSourceIdMessage, 100);
+        return;
+    }
+    iframe.contentWindow.postMessage({
+        captureSourceId: true
+    }, '*');
+}
+var iframe;
+// this function is used in RTCMultiConnection v3
+window.getScreenConstraints = function (callback) {
+    loadIFrame(function () {
+        getScreenId(function (error, sourceId, screen_constraints) {
+            callback(error, screen_constraints.video);
+        });
+    });
+};
+function loadIFrame(loadCallback) {
+    if (iframe) {
+        loadCallback();
+        return;
+    }
+    iframe = document.createElement('iframe');
+    iframe.onload = function () {
+        iframe.isLoaded = true;
+        loadCallback();
+    };
+    iframe.src = 'https://www.webrtc-experiment.com/getSourceId/'; // https://wwww.yourdomain.com/getScreenId.html
+    iframe.style.display = 'none';
+    (document.body || document.documentElement).appendChild(iframe);
+}
+window.getChromeExtensionStatus = function (callback) {
+    // for Firefox:
+    if (!!navigator.mozGetUserMedia) {
+        callback('installed-enabled');
+        return;
+    }
+    window.addEventListener('message', onIFrameCallback);
+    function onIFrameCallback(event) {
+        if (!event.data)
+            return;
+        if (event.data.chromeExtensionStatus) {
+            callback(event.data.chromeExtensionStatus);
+        }
+        // this event listener is no more needed
+        window.removeEventListener('message', onIFrameCallback);
+    }
+    setTimeout(postGetChromeExtensionStatusMessage, 100);
+};
+function postGetChromeExtensionStatusMessage() {
+    if (!iframe) {
+        loadIFrame(postGetChromeExtensionStatusMessage);
+        return;
+    }
+    if (!iframe.isLoaded) {
+        setTimeout(postGetChromeExtensionStatusMessage, 100);
+        return;
+    }
+    iframe.contentWindow.postMessage({
+        getChromeExtensionStatus: true
+    }, '*');
+}
+exports.getScreenId = getScreenId;
+exports.getChromeExtensionStatus = getChromeExtensionStatus;
+//# sourceMappingURL=Screen-Capturing-Auto.js.map
+
+/***/ }),
+/* 213 */,
+/* 214 */,
+/* 215 */,
+/* 216 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -110462,7 +114718,7 @@ module.exports = function(input) {
  /* eslint-env node */
 
 
-var SDPUtils = __webpack_require__(111);
+var SDPUtils = __webpack_require__(118);
 
 function writeMediaSection(transceiver, caps, type, stream, dtlsRole) {
   var sdp = SDPUtils.writeRtpDescription(transceiver.kind, caps);
@@ -112013,7 +116269,7 @@ module.exports = function(window, edgeVersion) {
 
 
 /***/ }),
-/* 202 */
+/* 217 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -112055,7 +116311,7 @@ exports.InnerSubscriber = InnerSubscriber;
 //# sourceMappingURL=InnerSubscriber.js.map
 
 /***/ }),
-/* 203 */
+/* 218 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -112188,7 +116444,7 @@ exports.Notification = Notification;
 //# sourceMappingURL=Notification.js.map
 
 /***/ }),
-/* 204 */
+/* 219 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -112243,7 +116499,7 @@ exports.Scheduler = Scheduler;
 //# sourceMappingURL=Scheduler.js.map
 
 /***/ }),
-/* 205 */
+/* 220 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -112289,142 +116545,142 @@ exports.SubjectSubscription = SubjectSubscription;
 //# sourceMappingURL=SubjectSubscription.js.map
 
 /***/ }),
-/* 206 */
+/* 221 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 var Observable_1 = __webpack_require__(0);
-var forkJoin_1 = __webpack_require__(96);
+var forkJoin_1 = __webpack_require__(103);
 Observable_1.Observable.forkJoin = forkJoin_1.forkJoin;
 //# sourceMappingURL=forkJoin.js.map
 
 /***/ }),
-/* 207 */
+/* 222 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 var Observable_1 = __webpack_require__(0);
-var fromEvent_1 = __webpack_require__(231);
+var fromEvent_1 = __webpack_require__(246);
 Observable_1.Observable.fromEvent = fromEvent_1.fromEvent;
 //# sourceMappingURL=fromEvent.js.map
 
 /***/ }),
-/* 208 */
+/* 223 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 var Observable_1 = __webpack_require__(0);
-var merge_1 = __webpack_require__(98);
+var merge_1 = __webpack_require__(105);
 Observable_1.Observable.merge = merge_1.merge;
 //# sourceMappingURL=merge.js.map
 
 /***/ }),
-/* 209 */
+/* 224 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 var Observable_1 = __webpack_require__(0);
-var of_1 = __webpack_require__(99);
+var of_1 = __webpack_require__(106);
 Observable_1.Observable.of = of_1.of;
 //# sourceMappingURL=of.js.map
 
 /***/ }),
-/* 210 */
+/* 225 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 var Observable_1 = __webpack_require__(0);
-var throw_1 = __webpack_require__(232);
+var throw_1 = __webpack_require__(247);
 Observable_1.Observable.throw = throw_1._throw;
 //# sourceMappingURL=throw.js.map
 
 /***/ }),
-/* 211 */
+/* 226 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 var Observable_1 = __webpack_require__(0);
-var auditTime_1 = __webpack_require__(233);
+var auditTime_1 = __webpack_require__(248);
 Observable_1.Observable.prototype.auditTime = auditTime_1.auditTime;
 //# sourceMappingURL=auditTime.js.map
 
 /***/ }),
-/* 212 */
+/* 227 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 var Observable_1 = __webpack_require__(0);
-var catch_1 = __webpack_require__(100);
+var catch_1 = __webpack_require__(107);
 Observable_1.Observable.prototype.catch = catch_1._catch;
 Observable_1.Observable.prototype._catch = catch_1._catch;
 //# sourceMappingURL=catch.js.map
 
 /***/ }),
-/* 213 */
+/* 228 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 var Observable_1 = __webpack_require__(0);
-var debounceTime_1 = __webpack_require__(237);
+var debounceTime_1 = __webpack_require__(252);
 Observable_1.Observable.prototype.debounceTime = debounceTime_1.debounceTime;
 //# sourceMappingURL=debounceTime.js.map
 
 /***/ }),
-/* 214 */
+/* 229 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 var Observable_1 = __webpack_require__(0);
-var do_1 = __webpack_require__(238);
+var do_1 = __webpack_require__(253);
 Observable_1.Observable.prototype.do = do_1._do;
 Observable_1.Observable.prototype._do = do_1._do;
 //# sourceMappingURL=do.js.map
 
 /***/ }),
-/* 215 */
+/* 230 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 var Observable_1 = __webpack_require__(0);
-var filter_1 = __webpack_require__(64);
+var filter_1 = __webpack_require__(66);
 Observable_1.Observable.prototype.filter = filter_1.filter;
 //# sourceMappingURL=filter.js.map
 
 /***/ }),
-/* 216 */
+/* 231 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 var Observable_1 = __webpack_require__(0);
-var finally_1 = __webpack_require__(240);
+var finally_1 = __webpack_require__(255);
 Observable_1.Observable.prototype.finally = finally_1._finally;
 Observable_1.Observable.prototype._finally = finally_1._finally;
 //# sourceMappingURL=finally.js.map
 
 /***/ }),
-/* 217 */
+/* 232 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 var Observable_1 = __webpack_require__(0);
-var first_1 = __webpack_require__(101);
+var first_1 = __webpack_require__(108);
 Observable_1.Observable.prototype.first = first_1.first;
 //# sourceMappingURL=first.js.map
 
 /***/ }),
-/* 218 */
+/* 233 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -112435,51 +116691,51 @@ Observable_1.Observable.prototype.map = map_1.map;
 //# sourceMappingURL=map.js.map
 
 /***/ }),
-/* 219 */
+/* 234 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 var Observable_1 = __webpack_require__(0);
-var share_1 = __webpack_require__(103);
+var share_1 = __webpack_require__(110);
 Observable_1.Observable.prototype.share = share_1.share;
 //# sourceMappingURL=share.js.map
 
 /***/ }),
-/* 220 */
+/* 235 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 var Observable_1 = __webpack_require__(0);
-var startWith_1 = __webpack_require__(246);
+var startWith_1 = __webpack_require__(261);
 Observable_1.Observable.prototype.startWith = startWith_1.startWith;
 //# sourceMappingURL=startWith.js.map
 
 /***/ }),
-/* 221 */
+/* 236 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 var Observable_1 = __webpack_require__(0);
-var switchMap_1 = __webpack_require__(247);
+var switchMap_1 = __webpack_require__(262);
 Observable_1.Observable.prototype.switchMap = switchMap_1.switchMap;
 //# sourceMappingURL=switchMap.js.map
 
 /***/ }),
-/* 222 */
+/* 237 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 var Observable_1 = __webpack_require__(0);
-var takeUntil_1 = __webpack_require__(248);
+var takeUntil_1 = __webpack_require__(263);
 Observable_1.Observable.prototype.takeUntil = takeUntil_1.takeUntil;
 //# sourceMappingURL=takeUntil.js.map
 
 /***/ }),
-/* 223 */
+/* 238 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -112490,7 +116746,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var Observable_1 = __webpack_require__(0);
-var ScalarObservable_1 = __webpack_require__(63);
+var ScalarObservable_1 = __webpack_require__(65);
 var EmptyObservable_1 = __webpack_require__(38);
 /**
  * We need this JSDoc comment for affecting ESDoc.
@@ -112555,7 +116811,7 @@ exports.ArrayLikeObservable = ArrayLikeObservable;
 //# sourceMappingURL=ArrayLikeObservable.js.map
 
 /***/ }),
-/* 224 */
+/* 239 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -112730,7 +116986,7 @@ var RefCountSubscriber = (function (_super) {
 //# sourceMappingURL=ConnectableObservable.js.map
 
 /***/ }),
-/* 225 */
+/* 240 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -112819,7 +117075,7 @@ exports.ErrorObservable = ErrorObservable;
 //# sourceMappingURL=ErrorObservable.js.map
 
 /***/ }),
-/* 226 */
+/* 241 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -112831,7 +117087,7 @@ var __extends = (this && this.__extends) || function (d, b) {
 };
 var Observable_1 = __webpack_require__(0);
 var EmptyObservable_1 = __webpack_require__(38);
-var isArray_1 = __webpack_require__(70);
+var isArray_1 = __webpack_require__(72);
 var subscribeToResult_1 = __webpack_require__(23);
 var OuterSubscriber_1 = __webpack_require__(22);
 /**
@@ -112937,7 +117193,7 @@ var ForkJoinSubscriber = (function (_super) {
 //# sourceMappingURL=ForkJoinObservable.js.map
 
 /***/ }),
-/* 227 */
+/* 242 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -112948,9 +117204,9 @@ var __extends = (this && this.__extends) || function (d, b) {
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var Observable_1 = __webpack_require__(0);
-var tryCatch_1 = __webpack_require__(109);
-var isFunction_1 = __webpack_require__(71);
-var errorObject_1 = __webpack_require__(69);
+var tryCatch_1 = __webpack_require__(116);
+var isFunction_1 = __webpack_require__(73);
+var errorObject_1 = __webpack_require__(71);
 var Subscription_1 = __webpack_require__(15);
 var toString = Object.prototype.toString;
 function isNodeStyleEventEmitter(sourceObj) {
@@ -113083,7 +117339,7 @@ exports.FromEventObservable = FromEventObservable;
 //# sourceMappingURL=FromEventObservable.js.map
 
 /***/ }),
-/* 228 */
+/* 243 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -113093,17 +117349,17 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var isArray_1 = __webpack_require__(70);
-var isArrayLike_1 = __webpack_require__(106);
-var isPromise_1 = __webpack_require__(108);
-var PromiseObservable_1 = __webpack_require__(95);
-var IteratorObservable_1 = __webpack_require__(229);
+var isArray_1 = __webpack_require__(72);
+var isArrayLike_1 = __webpack_require__(113);
+var isPromise_1 = __webpack_require__(115);
+var PromiseObservable_1 = __webpack_require__(102);
+var IteratorObservable_1 = __webpack_require__(244);
 var ArrayObservable_1 = __webpack_require__(31);
-var ArrayLikeObservable_1 = __webpack_require__(223);
-var iterator_1 = __webpack_require__(65);
+var ArrayLikeObservable_1 = __webpack_require__(238);
+var iterator_1 = __webpack_require__(67);
 var Observable_1 = __webpack_require__(0);
-var observeOn_1 = __webpack_require__(244);
-var observable_1 = __webpack_require__(66);
+var observeOn_1 = __webpack_require__(259);
+var observable_1 = __webpack_require__(68);
 /**
  * We need this JSDoc comment for affecting ESDoc.
  * @extends {Ignored}
@@ -113211,7 +117467,7 @@ exports.FromObservable = FromObservable;
 //# sourceMappingURL=FromObservable.js.map
 
 /***/ }),
-/* 229 */
+/* 244 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -113223,7 +117479,7 @@ var __extends = (this && this.__extends) || function (d, b) {
 };
 var root_1 = __webpack_require__(16);
 var Observable_1 = __webpack_require__(0);
-var iterator_1 = __webpack_require__(65);
+var iterator_1 = __webpack_require__(67);
 /**
  * We need this JSDoc comment for affecting ESDoc.
  * @extends {Ignored}
@@ -113380,37 +117636,37 @@ function sign(value) {
 //# sourceMappingURL=IteratorObservable.js.map
 
 /***/ }),
-/* 230 */
+/* 245 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-var FromObservable_1 = __webpack_require__(228);
+var FromObservable_1 = __webpack_require__(243);
 exports.from = FromObservable_1.FromObservable.create;
 //# sourceMappingURL=from.js.map
 
 /***/ }),
-/* 231 */
+/* 246 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-var FromEventObservable_1 = __webpack_require__(227);
+var FromEventObservable_1 = __webpack_require__(242);
 exports.fromEvent = FromEventObservable_1.FromEventObservable.create;
 //# sourceMappingURL=fromEvent.js.map
 
 /***/ }),
-/* 232 */
+/* 247 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-var ErrorObservable_1 = __webpack_require__(225);
+var ErrorObservable_1 = __webpack_require__(240);
 exports._throw = ErrorObservable_1.ErrorObservable.create;
 //# sourceMappingURL=throw.js.map
 
 /***/ }),
-/* 233 */
+/* 248 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -113420,7 +117676,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var async_1 = __webpack_require__(104);
+var async_1 = __webpack_require__(111);
 var Subscriber_1 = __webpack_require__(4);
 /**
  * Ignores source values for `duration` milliseconds, then emits the most recent
@@ -113520,7 +117776,7 @@ function dispatchNext(subscriber) {
 //# sourceMappingURL=auditTime.js.map
 
 /***/ }),
-/* 234 */
+/* 249 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -113700,7 +117956,7 @@ exports.concatStatic = concatStatic;
 //# sourceMappingURL=concat.js.map
 
 /***/ }),
-/* 235 */
+/* 250 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -113762,12 +118018,12 @@ exports.concatAll = concatAll;
 //# sourceMappingURL=concatAll.js.map
 
 /***/ }),
-/* 236 */
+/* 251 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-var mergeMap_1 = __webpack_require__(102);
+var mergeMap_1 = __webpack_require__(109);
 /* tslint:enable:max-line-length */
 /**
  * Projects each source value to an Observable which is merged in the output
@@ -113835,7 +118091,7 @@ exports.concatMap = concatMap;
 //# sourceMappingURL=concatMap.js.map
 
 /***/ }),
-/* 237 */
+/* 252 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -113846,7 +118102,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var Subscriber_1 = __webpack_require__(4);
-var async_1 = __webpack_require__(104);
+var async_1 = __webpack_require__(111);
 /**
  * Emits a value from the source Observable only after a particular time span
  * has passed without another source emission.
@@ -113957,7 +118213,7 @@ function dispatchNext(subscriber) {
 //# sourceMappingURL=debounceTime.js.map
 
 /***/ }),
-/* 238 */
+/* 253 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -114076,7 +118332,7 @@ var DoSubscriber = (function (_super) {
 //# sourceMappingURL=do.js.map
 
 /***/ }),
-/* 239 */
+/* 254 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -114156,7 +118412,7 @@ var EverySubscriber = (function (_super) {
 //# sourceMappingURL=every.js.map
 
 /***/ }),
-/* 240 */
+/* 255 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -114205,7 +118461,7 @@ var FinallySubscriber = (function (_super) {
 //# sourceMappingURL=finally.js.map
 
 /***/ }),
-/* 241 */
+/* 256 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -114216,7 +118472,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var Subscriber_1 = __webpack_require__(4);
-var EmptyError_1 = __webpack_require__(68);
+var EmptyError_1 = __webpack_require__(70);
 /* tslint:enable:max-line-length */
 /**
  * Returns an Observable that emits only the last item emitted by the source Observable.
@@ -114330,7 +118586,7 @@ var LastSubscriber = (function (_super) {
 //# sourceMappingURL=last.js.map
 
 /***/ }),
-/* 242 */
+/* 257 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -114481,12 +118737,12 @@ exports.mergeStatic = mergeStatic;
 //# sourceMappingURL=merge.js.map
 
 /***/ }),
-/* 243 */
+/* 258 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-var ConnectableObservable_1 = __webpack_require__(224);
+var ConnectableObservable_1 = __webpack_require__(239);
 /* tslint:enable:max-line-length */
 /**
  * Returns an Observable that emits the results of invoking a specified selector on items
@@ -114544,7 +118800,7 @@ exports.MulticastOperator = MulticastOperator;
 //# sourceMappingURL=multicast.js.map
 
 /***/ }),
-/* 244 */
+/* 259 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -114555,7 +118811,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var Subscriber_1 = __webpack_require__(4);
-var Notification_1 = __webpack_require__(203);
+var Notification_1 = __webpack_require__(218);
 /**
  *
  * Re-emits all notifications from source Observable with specified scheduler.
@@ -114663,7 +118919,7 @@ exports.ObserveOnMessage = ObserveOnMessage;
 //# sourceMappingURL=observeOn.js.map
 
 /***/ }),
-/* 245 */
+/* 260 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -114795,15 +119051,15 @@ exports.ReduceSubscriber = ReduceSubscriber;
 //# sourceMappingURL=reduce.js.map
 
 /***/ }),
-/* 246 */
+/* 261 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 var ArrayObservable_1 = __webpack_require__(31);
-var ScalarObservable_1 = __webpack_require__(63);
+var ScalarObservable_1 = __webpack_require__(65);
 var EmptyObservable_1 = __webpack_require__(38);
-var concat_1 = __webpack_require__(234);
+var concat_1 = __webpack_require__(249);
 var isScheduler_1 = __webpack_require__(41);
 /* tslint:enable:max-line-length */
 /**
@@ -114847,7 +119103,7 @@ exports.startWith = startWith;
 //# sourceMappingURL=startWith.js.map
 
 /***/ }),
-/* 247 */
+/* 262 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -114993,7 +119249,7 @@ var SwitchMapSubscriber = (function (_super) {
 //# sourceMappingURL=switchMap.js.map
 
 /***/ }),
-/* 248 */
+/* 263 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -115074,7 +119330,7 @@ var TakeUntilSubscriber = (function (_super) {
 //# sourceMappingURL=takeUntil.js.map
 
 /***/ }),
-/* 249 */
+/* 264 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -115124,7 +119380,7 @@ exports.Action = Action;
 //# sourceMappingURL=Action.js.map
 
 /***/ }),
-/* 250 */
+/* 265 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -115135,7 +119391,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var root_1 = __webpack_require__(16);
-var Action_1 = __webpack_require__(249);
+var Action_1 = __webpack_require__(264);
 /**
  * We need this JSDoc comment for affecting ESDoc.
  * @ignore
@@ -115272,7 +119528,7 @@ exports.AsyncAction = AsyncAction;
 //# sourceMappingURL=AsyncAction.js.map
 
 /***/ }),
-/* 251 */
+/* 266 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -115282,7 +119538,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var Scheduler_1 = __webpack_require__(204);
+var Scheduler_1 = __webpack_require__(219);
 var AsyncScheduler = (function (_super) {
     __extends(AsyncScheduler, _super);
     function AsyncScheduler() {
@@ -115329,7 +119585,7 @@ exports.AsyncScheduler = AsyncScheduler;
 //# sourceMappingURL=AsyncScheduler.js.map
 
 /***/ }),
-/* 252 */
+/* 267 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -115360,14 +119616,14 @@ exports.UnsubscriptionError = UnsubscriptionError;
 //# sourceMappingURL=UnsubscriptionError.js.map
 
 /***/ }),
-/* 253 */
+/* 268 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 var Subscriber_1 = __webpack_require__(4);
-var rxSubscriber_1 = __webpack_require__(67);
-var Observer_1 = __webpack_require__(94);
+var rxSubscriber_1 = __webpack_require__(69);
+var Observer_1 = __webpack_require__(101);
 function toSubscriber(nextOrObserver, error, complete) {
     if (nextOrObserver) {
         if (nextOrObserver instanceof Subscriber_1.Subscriber) {
@@ -115386,11 +119642,11 @@ exports.toSubscriber = toSubscriber;
 //# sourceMappingURL=toSubscriber.js.map
 
 /***/ }),
-/* 254 */
+/* 269 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var parser = __webpack_require__(255);
-var writer = __webpack_require__(256);
+var parser = __webpack_require__(270);
+var writer = __webpack_require__(271);
 
 exports.write = writer;
 exports.parse = parser.parse;
@@ -115400,7 +119656,7 @@ exports.parseRemoteCandidates = parser.parseRemoteCandidates;
 
 
 /***/ }),
-/* 255 */
+/* 270 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var toIntIfInt = function (v) {
@@ -115439,7 +119695,7 @@ var parseReg = function (obj, location, content) {
   }
 };
 
-var grammar = __webpack_require__(110);
+var grammar = __webpack_require__(117);
 var validLine = RegExp.prototype.test.bind(/^([a-z])=(.*)/);
 
 exports.parse = function (sdp) {
@@ -115499,10 +119755,10 @@ exports.parseRemoteCandidates = function (str) {
 
 
 /***/ }),
-/* 256 */
+/* 271 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var grammar = __webpack_require__(110);
+var grammar = __webpack_require__(117);
 
 // customized util.format - discards excess arguments and can void middle ones
 var formatRegExp = /%[sdv%]/g;
@@ -115619,7 +119875,7 @@ module.exports = function (session, opts) {
 
 
 /***/ }),
-/* 257 */
+/* 272 */
 /***/ (function(module, exports) {
 
 /* Copyright @ 2015 Atlassian Pty Ltd
@@ -115664,7 +119920,7 @@ module.exports = function arrayEquals(array) {
 
 
 /***/ }),
-/* 258 */
+/* 273 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* Copyright @ 2015 Atlassian Pty Ltd
@@ -115682,11 +119938,11 @@ module.exports = function arrayEquals(array) {
  * limitations under the License.
  */
 
-exports.Interop = __webpack_require__(259);
+exports.Interop = __webpack_require__(274);
 
 
 /***/ }),
-/* 259 */
+/* 274 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -115710,8 +119966,8 @@ exports.Interop = __webpack_require__(259);
 /* jshint -W097 */
 
 
-var transform = __webpack_require__(260);
-var arrayEquals = __webpack_require__(257);
+var transform = __webpack_require__(275);
+var arrayEquals = __webpack_require__(272);
 
 function Interop() {
 
@@ -116576,7 +120832,7 @@ Interop.prototype.toUnifiedPlan = function(desc) {
 
 
 /***/ }),
-/* 260 */
+/* 275 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* Copyright @ 2015 Atlassian Pty Ltd
@@ -116594,7 +120850,7 @@ Interop.prototype.toUnifiedPlan = function(desc) {
  * limitations under the License.
  */
 
-var transform = __webpack_require__(254);
+var transform = __webpack_require__(269);
 
 exports.write = function(session, opts) {
 
@@ -116694,21 +120950,8 @@ exports.parse = function(sdp) {
 
 
 /***/ }),
-/* 261 */,
-/* 262 */,
-/* 263 */,
-/* 264 */,
-/* 265 */,
-/* 266 */,
-/* 267 */,
-/* 268 */,
-/* 269 */,
-/* 270 */,
-/* 271 */,
-/* 272 */,
-/* 273 */,
-/* 274 */,
-/* 275 */
+/* 276 */,
+/* 277 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var __WEBPACK_AMD_DEFINE_RESULT__;/**
@@ -117712,7 +121955,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;/**
         exports.UAParser = UAParser;
     } else {
         // requirejs env (optional)
-        if ("function" === FUNC_TYPE && __webpack_require__(278)) {
+        if ("function" === FUNC_TYPE && __webpack_require__(280)) {
             !(__WEBPACK_AMD_DEFINE_RESULT__ = function () {
                 return UAParser;
             }.call(exports, __webpack_require__, exports, module),
@@ -117748,7 +121991,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;/**
 
 
 /***/ }),
-/* 276 */
+/* 278 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global) {
@@ -117787,7 +122030,7 @@ module.exports = rng;
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(9)))
 
 /***/ }),
-/* 277 */
+/* 279 */
 /***/ (function(module, exports, __webpack_require__) {
 
 //     uuid.js
@@ -117798,7 +122041,7 @@ module.exports = rng;
 // Unique ID creation requires a high quality random # generator.  We feature
 // detect to determine the best RNG source, normalizing to a function that
 // returns 128-bits of randomness, since that's what's usually required
-var _rng = __webpack_require__(276);
+var _rng = __webpack_require__(278);
 
 // Maps for number <-> hex string conversion
 var _byteToHex = [];
@@ -117976,7 +122219,7 @@ module.exports = uuid;
 
 
 /***/ }),
-/* 278 */
+/* 280 */
 /***/ (function(module, exports) {
 
 /* WEBPACK VAR INJECTION */(function(__webpack_amd_options__) {/* globals __webpack_amd_options__ */
@@ -117985,7 +122228,7 @@ module.exports = __webpack_amd_options__;
 /* WEBPACK VAR INJECTION */}.call(exports, {}))
 
 /***/ }),
-/* 279 */
+/* 281 */
 /***/ (function(module, exports) {
 
 module.exports = function(module) {
@@ -118013,7 +122256,7 @@ module.exports = function(module) {
 
 
 /***/ }),
-/* 280 */
+/* 282 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -118065,11 +122308,11 @@ module.exports = function(dependencies, opts) {
   // require('./utils').disableLog(false);
 
   // Browser shims.
-  var chromeShim = __webpack_require__(281) || null;
-  var edgeShim = __webpack_require__(284) || null;
-  var firefoxShim = __webpack_require__(286) || null;
-  var safariShim = __webpack_require__(288) || null;
-  var commonShim = __webpack_require__(283) || null;
+  var chromeShim = __webpack_require__(283) || null;
+  var edgeShim = __webpack_require__(286) || null;
+  var firefoxShim = __webpack_require__(288) || null;
+  var safariShim = __webpack_require__(290) || null;
+  var commonShim = __webpack_require__(285) || null;
 
   // Shim browser if found.
   switch (browserDetails.browser) {
@@ -118157,7 +122400,7 @@ module.exports = function(dependencies, opts) {
 
 
 /***/ }),
-/* 281 */
+/* 283 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -118832,12 +123075,12 @@ module.exports = {
   shimGetSendersWithDtmf: chromeShim.shimGetSendersWithDtmf,
   shimSourceObject: chromeShim.shimSourceObject,
   shimPeerConnection: chromeShim.shimPeerConnection,
-  shimGetUserMedia: __webpack_require__(282)
+  shimGetUserMedia: __webpack_require__(284)
 };
 
 
 /***/ }),
-/* 282 */
+/* 284 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -119081,7 +123324,7 @@ module.exports = function(window) {
 
 
 /***/ }),
-/* 283 */
+/* 285 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -119095,7 +123338,7 @@ module.exports = function(window) {
  /* eslint-env node */
 
 
-var SDPUtils = __webpack_require__(111);
+var SDPUtils = __webpack_require__(118);
 var utils = __webpack_require__(17);
 
 // Wraps the peerconnection event eventNameToWrap in a function
@@ -119254,7 +123497,7 @@ module.exports = {
 
 
 /***/ }),
-/* 284 */
+/* 286 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -119269,10 +123512,10 @@ module.exports = {
 
 
 var utils = __webpack_require__(17);
-var shimRTCPeerConnection = __webpack_require__(201);
+var shimRTCPeerConnection = __webpack_require__(216);
 
 module.exports = {
-  shimGetUserMedia: __webpack_require__(285),
+  shimGetUserMedia: __webpack_require__(287),
   shimPeerConnection: function(window) {
     var browserDetails = utils.detectBrowser(window);
 
@@ -119341,7 +123584,7 @@ module.exports = {
 
 
 /***/ }),
-/* 285 */
+/* 287 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -119382,7 +123625,7 @@ module.exports = function(window) {
 
 
 /***/ }),
-/* 286 */
+/* 288 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -119592,12 +123835,12 @@ module.exports = {
   shimOnTrack: firefoxShim.shimOnTrack,
   shimSourceObject: firefoxShim.shimSourceObject,
   shimPeerConnection: firefoxShim.shimPeerConnection,
-  shimGetUserMedia: __webpack_require__(287)
+  shimGetUserMedia: __webpack_require__(289)
 };
 
 
 /***/ }),
-/* 287 */
+/* 289 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -119813,7 +124056,7 @@ module.exports = function(window) {
 
 
 /***/ }),
-/* 288 */
+/* 290 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -120088,7 +124331,7 @@ module.exports = {
 
 
 /***/ }),
-/* 289 */
+/* 291 */
 /***/ (function(module, exports) {
 
 /*
