@@ -6051,8 +6051,24 @@ var Session = /** @class */ (function () {
         return subscriber;
     };
     Session.prototype.unsubscribe = function (subscriber) {
-        this.session.unsuscribe(subscriber.stream);
+        this.session.unsubscribe(subscriber.stream);
         subscriber.stream.removeVideo();
+    };
+    Session.prototype.signal = function (signal, completionHandler) {
+        var signalMessage = {};
+        if (signal.to && signal.to.length > 0) {
+            var connectionIds = [];
+            for (var i = 0; i < signal.to.length; i++) {
+                connectionIds.push(signal.to[i].connectionId);
+            }
+            signalMessage['to'] = connectionIds;
+        }
+        else {
+            signalMessage['to'] = [];
+        }
+        signalMessage['data'] = signal.data ? signal.data : '';
+        signalMessage['type'] = signal.type ? signal.type : '';
+        this.openVidu.openVidu.sendMessage(this.sessionId, this.connection.connectionId, JSON.stringify(signalMessage));
     };
     return Session;
 }());
@@ -6174,8 +6190,8 @@ var Connection = /** @class */ (function () {
         }
     }
     Connection.prototype.addStream = function (stream) {
-        this.streams[stream.getIdInParticipant()] = stream;
-        this.room.getStreams()[stream.getIdInParticipant()] = stream;
+        this.streams[stream.streamId] = stream;
+        this.room.getStreams()[stream.streamId] = stream;
     };
     Connection.prototype.getStreams = function () {
         return this.streams;
@@ -6209,6 +6225,7 @@ var Connection = /** @class */ (function () {
                 sendVideo: streamOptions.sendVideo,
                 recvAudio: (streamOptions.audioActive == undefined ? true : streamOptions.audioActive),
                 recvVideo: (streamOptions.videoActive == undefined ? true : streamOptions.videoActive),
+                typeOfVideo: streamOptions.typeOfVideo,
                 activeAudio: streamOptions.activeAudio,
                 activeVideo: streamOptions.activeVideo,
                 data: streamOptions.data,
@@ -6654,7 +6671,7 @@ var SessionInternal = /** @class */ (function () {
         this.ee = new EventEmitter();
         this.streams = {};
         this.participants = {};
-        this.participantsSpeaking = [];
+        this.publishersSpeaking = [];
         this.connected = false;
         this.sessionId = this.getUrlWithoutSecret(sessionId);
         this.localParticipant = new Connection_1.Connection(this.openVidu, true, this);
@@ -6792,14 +6809,13 @@ var SessionInternal = /** @class */ (function () {
         return this.sessionId;
     };
     SessionInternal.prototype.activateUpdateMainSpeaker = function () {
-        var _this = this;
-        setInterval(function () {
-            if (_this.participantsSpeaking.length > 0) {
-                _this.ee.emitEvent('update-main-speaker', [{
-                        participantId: _this.participantsSpeaking[_this.participantsSpeaking.length - 1]
-                    }]);
+        /*setInterval(() => {
+            if (this.publishersSpeaking.length > 0) {
+                this.ee.emitEvent('publisherStartSpeaking', [{
+                    participantId: this.publishersSpeaking[this.publishersSpeaking.length - 1]
+                }]);
             }
-        }, this.updateSpeakerInterval);
+        }, this.updateSpeakerInterval);*/
     };
     SessionInternal.prototype.getLocalParticipant = function () {
         return this.localParticipant;
@@ -6822,16 +6838,16 @@ var SessionInternal = /** @class */ (function () {
     SessionInternal.prototype.subscribe = function (stream) {
         stream.subscribe();
     };
-    SessionInternal.prototype.unsuscribe = function (stream) {
-        console.info("Unsubscribing from " + stream.getId());
+    SessionInternal.prototype.unsubscribe = function (stream) {
+        console.info("Unsubscribing from " + stream.streamId);
         this.openVidu.sendRequest('unsubscribeFromVideo', {
-            sender: stream.getId()
+            sender: stream.streamId
         }, function (error, response) {
             if (error) {
                 console.error("Error unsubscribing from Subscriber", error);
             }
             else {
-                console.info("Unsubscribed correctly from " + stream.getId());
+                console.info("Unsubscribed correctly from " + stream.streamId);
             }
         });
     };
@@ -6929,20 +6945,17 @@ var SessionInternal = /** @class */ (function () {
     };
     ;
     SessionInternal.prototype.onNewMessage = function (msg) {
-        console.info("New message: " + JSON.stringify(msg));
-        var room = msg.room;
-        var user = msg.user;
-        var message = msg.message;
-        if (user !== undefined) {
-            this.ee.emitEvent('newMessage', [{
-                    room: room,
-                    user: user,
-                    message: message
-                }]);
-        }
-        else {
-            console.warn("User undefined in new message:", msg);
-        }
+        console.info("New signal: " + JSON.stringify(msg));
+        this.ee.emitEvent('signal', [{
+                data: msg.data,
+                from: this.participants[msg.from],
+                type: msg.type
+            }]);
+        this.ee.emitEvent('signal:' + msg.type, [{
+                data: msg.data,
+                from: this.participants[msg.from],
+                type: msg.type
+            }]);
     };
     SessionInternal.prototype.recvIceCandidate = function (msg) {
         var candidate = {
@@ -7059,7 +7072,7 @@ var SessionInternal = /** @class */ (function () {
             });
         }
         else {
-            this.unsuscribe(stream);
+            this.unsubscribe(stream);
         }
     };
     SessionInternal.prototype.unpublish = function (stream) {
@@ -7087,18 +7100,24 @@ var SessionInternal = /** @class */ (function () {
         return this.streams;
     };
     SessionInternal.prototype.addParticipantSpeaking = function (participantId) {
-        this.participantsSpeaking.push(participantId);
+        this.publishersSpeaking.push(participantId);
+        this.ee.emitEvent('publisherStartSpeaking', [{
+                participantId: participantId
+            }]);
     };
     SessionInternal.prototype.removeParticipantSpeaking = function (participantId) {
         var pos = -1;
-        for (var i = 0; i < this.participantsSpeaking.length; i++) {
-            if (this.participantsSpeaking[i] == participantId) {
+        for (var i = 0; i < this.publishersSpeaking.length; i++) {
+            if (this.publishersSpeaking[i] == participantId) {
                 pos = i;
                 break;
             }
         }
         if (pos != -1) {
-            this.participantsSpeaking.splice(pos, 1);
+            this.publishersSpeaking.splice(pos, 1);
+            this.ee.emitEvent('publisherStopSpeaking', [{
+                    participantId: participantId
+                }]);
         }
     };
     SessionInternal.prototype.stringClientMetadata = function (metadata) {
@@ -7174,7 +7193,7 @@ var Stream = /** @class */ (function () {
             _this.videoSrcObject = srcEvent.srcObject;
             if (_this.video)
                 _this.video.srcObject = srcEvent.srcObject;
-            console.debug("Video srcObject [" + srcEvent.srcObject + "] added to stream [" + _this.getId() + "]");
+            console.debug("Video srcObject [" + srcEvent.srcObject + "] added to stream [" + _this.streamId + "]");
         });
     }
     Stream.prototype.emitSrcEvent = function (wrstream) {
@@ -7237,7 +7256,7 @@ var Stream = /** @class */ (function () {
         return this.localMirrored;
     };
     Stream.prototype.getChannelName = function () {
-        return this.getId() + '_' + this.chanId++;
+        return this.streamId + '_' + this.chanId++;
     };
     Stream.prototype.isDataChannelEnabled = function () {
         return this.dataChannel;
@@ -7280,7 +7299,7 @@ var Stream = /** @class */ (function () {
     };
     Stream.prototype.showSpinner = function (spinnerParentId) {
         var progress = document.createElement('div');
-        progress.id = 'progress-' + this.getId();
+        progress.id = 'progress-' + this.streamId;
         progress.style.background = "center transparent url('img/spinner.gif') no-repeat";
         var spinnerParent = document.getElementById(spinnerParentId);
         if (spinnerParent) {
@@ -7288,13 +7307,13 @@ var Stream = /** @class */ (function () {
         }
     };
     Stream.prototype.hideSpinner = function (spinnerId) {
-        spinnerId = (spinnerId === undefined) ? this.getId() : spinnerId;
+        spinnerId = (spinnerId === undefined) ? this.streamId : spinnerId;
         hide('progress-' + spinnerId);
     };
     Stream.prototype.playOnlyVideo = function (parentElement, thumbnailId) {
         var _this = this;
         this.video = document.createElement('video');
-        this.video.id = (this.local ? 'local-' : 'remote-') + 'video-' + this.getId();
+        this.video.id = (this.local ? 'local-' : 'remote-') + 'video-' + this.streamId;
         this.video.autoplay = true;
         this.video.controls = false;
         this.video.srcObject = this.videoSrcObject;
@@ -7305,14 +7324,14 @@ var Stream = /** @class */ (function () {
         if (this.local && !this.displayMyRemote()) {
             this.video.muted = true;
             this.video.oncanplay = function () {
-                console.info("Local 'Stream' with id [" + _this.getId() + "] video is now playing");
+                console.info("Local 'Stream' with id [" + _this.streamId + "] video is now playing");
                 _this.ee.emitEvent('video-is-playing', [{
                         element: _this.video
                     }]);
             };
         }
         else {
-            this.video.title = this.getId();
+            this.video.title = this.streamId;
         }
         if (typeof parentElement === "string") {
             this.parentId = parentElement;
@@ -7335,7 +7354,7 @@ var Stream = /** @class */ (function () {
     Stream.prototype.playThumbnail = function (thumbnailId) {
         var container = document.createElement('div');
         container.className = "participant";
-        container.id = this.getId();
+        container.id = this.streamId;
         var thumbnail = document.getElementById(thumbnailId);
         if (thumbnail) {
             thumbnail.appendChild(container);
@@ -7343,25 +7362,19 @@ var Stream = /** @class */ (function () {
         this.elements.push(container);
         var name = document.createElement('div');
         container.appendChild(name);
-        var userName = this.getId().replace('_webcam', '');
+        var userName = this.streamId.replace('_webcam', '');
         if (userName.length >= 16) {
             userName = userName.substring(0, 16) + "...";
         }
         name.appendChild(document.createTextNode(userName));
-        name.id = "name-" + this.getId();
+        name.id = "name-" + this.streamId;
         name.className = "name";
-        name.title = this.getId();
+        name.title = this.streamId;
         this.showSpinner(thumbnailId);
         return this.playOnlyVideo(container, thumbnailId);
     };
-    Stream.prototype.getIdInParticipant = function () {
-        return this.id;
-    };
     Stream.prototype.getParticipant = function () {
         return this.connection;
-    };
-    Stream.prototype.getId = function () {
-        return this.connection.connectionId + "_" + this.id;
     };
     Stream.prototype.getRTCPeerConnection = function () {
         return this.getWebRtcPeer().peerConnection;
@@ -7457,12 +7470,13 @@ var Stream = /** @class */ (function () {
                 + JSON.stringify(error));
         }
         console.debug("Sending SDP offer to publish as "
-            + this.getId(), sdpOfferParam);
+            + this.streamId, sdpOfferParam);
         this.openVidu.sendRequest("publishVideo", {
             sdpOffer: sdpOfferParam,
             doLoopback: this.displayMyRemote() || false,
             audioActive: this.sendAudio,
-            videoActive: this.sendVideo
+            videoActive: this.sendVideo,
+            typeOfVideo: ((this.sendVideo) ? ((this.isScreenRequested) ? 'SCREEN' : 'CAMERA') : '')
         }, function (error, response) {
             if (error) {
                 console.error("Error on publishVideo: " + JSON.stringify(error));
@@ -7480,9 +7494,9 @@ var Stream = /** @class */ (function () {
                 + JSON.stringify(error));
         }
         console.debug("Sending SDP offer to subscribe to "
-            + this.getId(), sdpOfferParam);
+            + this.streamId, sdpOfferParam);
         this.openVidu.sendRequest("receiveVideoFrom", {
-            sender: this.getId(),
+            sender: this.streamId,
             sdpOffer: sdpOfferParam
         }, function (error, response) {
             if (error) {
@@ -7550,7 +7564,7 @@ var Stream = /** @class */ (function () {
             });
         }
         console.debug("Waiting for SDP offer to be generated ("
-            + (this.local ? "local" : "remote") + " 'Stream': " + this.getId() + ")");
+            + (this.local ? "local" : "remote") + " 'Stream': " + this.streamId + ")");
     };
     Stream.prototype.publish = function () {
         var _this = this;
@@ -7579,8 +7593,8 @@ var Stream = /** @class */ (function () {
             type: 'answer',
             sdp: sdpAnswer
         });
-        console.debug(this.getId() + ": set peer connection with recvd SDP answer", sdpAnswer);
-        var participantId = this.getId();
+        console.debug(this.streamId + ": set peer connection with recvd SDP answer", sdpAnswer);
+        var participantId = this.streamId;
         var pc = this.wp.peerConnection;
         pc.setRemoteDescription(answer, function () {
             // Avoids to subscribe to your own stream remotely 
@@ -7593,15 +7607,17 @@ var Stream = /** @class */ (function () {
                     if (_this.wrStream.getAudioTracks()[0] != null) {
                         _this.speechEvent = kurentoUtils.WebRtcPeer.hark(_this.wrStream, { threshold: _this.room.thresholdSpeaker });
                         _this.speechEvent.on('speaking', function () {
-                            _this.room.addParticipantSpeaking(participantId);
-                            _this.room.emitEvent('stream-speaking', [{
-                                    participantId: participantId
+                            //this.room.addParticipantSpeaking(participantId);
+                            _this.room.emitEvent('publisherStartSpeaking', [{
+                                    connection: _this.connection,
+                                    streamId: _this.streamId
                                 }]);
                         });
                         _this.speechEvent.on('stopped_speaking', function () {
-                            _this.room.removeParticipantSpeaking(participantId);
-                            _this.room.emitEvent('stream-stopped-speaking', [{
-                                    participantId: participantId
+                            //this.room.removeParticipantSpeaking(participantId);
+                            _this.room.emitEvent('publisherStopSpeaking', [{
+                                    connection: _this.connection,
+                                    streamId: _this.streamId
                                 }]);
                         });
                     }
@@ -7612,19 +7628,19 @@ var Stream = /** @class */ (function () {
                     video.srcObject = _this.wrStream;
                     video.oncanplay = function () {
                         if (_this.local && _this.displayMyRemote()) {
-                            console.info("Your own remote 'Stream' with id [" + _this.getId() + "] video is now playing");
+                            console.info("Your own remote 'Stream' with id [" + _this.streamId + "] video is now playing");
                             _this.ee.emitEvent('remote-video-is-playing', [{
                                     element: video
                                 }]);
                         }
                         else if (!_this.local && !_this.displayMyRemote()) {
-                            console.info("Remote 'Stream' with id [" + _this.getId() + "] video is now playing");
+                            console.info("Remote 'Stream' with id [" + _this.streamId + "] video is now playing");
                             _this.ee.emitEvent('video-is-playing', [{
                                     element: video
                                 }]);
                         }
                         //show(thumbnailId);
-                        //this.hideSpinner(this.getId());
+                        //this.hideSpinner(this.streamId);
                     };
                 };
                 for (var _i = 0, _a = _this.videoElements; _i < _a.length; _i++) {
@@ -7636,7 +7652,7 @@ var Stream = /** @class */ (function () {
                     }]);
             }
         }, function (error) {
-            console.error(_this.getId() + ": Error setting SDP to the peer connection: "
+            console.error(_this.streamId + ": Error setting SDP to the peer connection: "
                 + JSON.stringify(error));
         });
     };
@@ -7657,7 +7673,7 @@ var Stream = /** @class */ (function () {
         if (this.speechEvent) {
             this.speechEvent.stop();
         }
-        console.info(this.getId() + ": Stream '" + this.id + "' unpublished");
+        console.info(this.streamId + ": Stream '" + this.streamId + "' unpublished");
     };
     Stream.prototype.dispose = function () {
         function disposeElement(element) {
@@ -7667,7 +7683,7 @@ var Stream = /** @class */ (function () {
         }
         this.elements.forEach(function (e) { return disposeElement(e); });
         //this.videoElements.forEach(ve => disposeElement(ve.video));
-        disposeElement("progress-" + this.getId());
+        disposeElement("progress-" + this.streamId);
         if (this.wp) {
             this.wp.dispose();
         }
@@ -7684,14 +7700,14 @@ var Stream = /** @class */ (function () {
         if (this.speechEvent) {
             this.speechEvent.stop();
         }
-        console.info((this.local ? "Local " : "Remote ") + "'Stream' with id [" + this.getId() + "]' has been succesfully disposed");
+        console.info((this.local ? "Local " : "Remote ") + "'Stream' with id [" + this.streamId + "]' has been succesfully disposed");
     };
     Stream.prototype.configureOptions = function (options) {
         if (options.id) {
-            this.id = options.id;
+            this.streamId = options.id;
         }
         else {
-            this.id = "webcam";
+            this.streamId = "WEBCAM";
         }
         this.connection = options.connection;
         this.recvVideo = options.recvVideo || false;
@@ -7702,13 +7718,16 @@ var Stream = /** @class */ (function () {
         this.activeVideo = options.activeVideo;
         this.dataChannel = options.data || false;
         this.mediaConstraints = options.mediaConstraints;
+        this.hasAudio = ((this.recvAudio || this.sendAudio) != undefined) ? (this.recvAudio || this.sendAudio) : false;
+        this.hasVideo = ((this.recvVideo || this.sendVideo) != undefined) ? (this.recvVideo || this.sendVideo) : false;
+        this.typeOfVideo = options.typeOfVideo;
     };
     Stream.prototype.configureScreenOptions = function (options) {
         if (options.id) {
-            this.id = options.id;
+            this.streamId = options.id;
         }
         else {
-            this.id = "screen";
+            this.streamId = "SCREEN";
         }
         this.recvVideo = options.recvVideo || false;
         this.recvAudio = options.recvAudio || false;
