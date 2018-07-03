@@ -41,7 +41,7 @@ public class ChromeUser extends BrowserUser {
 		// This flag fakes user media with synthetic video
 		options.addArguments("--use-fake-device-for-media-stream");
 		// This flag selects the entire screen as video source when screen sharing
-		options.addArguments("--auto-select-desktop-capture-source=Entire screen");
+		options.addArguments("--auto-select-desktop-capture-source=OpenVidu TestApp - Google Chrome");
 		
 		try {
 			// Add Screen Sharing extension
