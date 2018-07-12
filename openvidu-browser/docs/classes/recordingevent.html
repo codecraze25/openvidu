@@ -129,7 +129,7 @@
 					</aside>
 					<div class="tsd-comment tsd-typography">
 						<div class="lead">
-							<p>Whether the event has a default behaviour that may be prevented by calling <a href="event.html#preventdefault">Event.preventDefault</a></p>
+							<p>Whether the event has a default behavior that may be prevented by calling <a href="event.html#preventdefault">Event.preventDefault</a></p>
 						</div>
 					</div>
 				</section>
@@ -162,8 +162,8 @@
 							<p>The recording name you supplied to openvidu-server. For example, to name your recording file MY_RECORDING:</p>
 							<ul>
 								<li>With <strong>API REST</strong>: POST to <code>/api/recordings/start</code> passing JSON body <code>{&quot;session&quot;:&quot;sessionId&quot;,&quot;name&quot;:&quot;MY_RECORDING&quot;}</code></li>
-								<li>With <strong>openvidu-java-client</strong>: <code>OpenVidu.startRecording(sessionId, MY_RECORDING)</code> or <code>OpenVidu.startRecording(sessionId, new RecordingProperties.Builder().name(MY_RECORDING).build())</code></li>
-								<li>With <strong>openvidu-node-client</strong>: <code>OpenVidu.startRecording(sessionId, MY_RECORDING)</code> or <code>OpenVidu.startRecording(sessionId, new RecordingProperties.Builder().name(MY_RECORDING).build())</code></li>
+								<li>With <strong>openvidu-java-client</strong>: <code>OpenVidu.startRecording(sessionId, &quot;MY_RECORDING&quot;)</code> or <code>OpenVidu.startRecording(sessionId, new RecordingProperties.Builder().name(&quot;MY_RECORDING&quot;).build())</code></li>
+								<li>With <strong>openvidu-node-client</strong>: <code>OpenVidu.startRecording(sessionId, &quot;MY_RECORDING&quot;)</code> or <code>OpenVidu.startRecording(sessionId, {name: &quot;MY_RECORDING&quot;})</code></li>
 							</ul>
 						</div>
 						<p>If no name is supplied, this property will be undefined and the recorded file will be named after property <a href="recordingevent.html#id">id</a></p>
@@ -243,7 +243,7 @@
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p>Prevents the default behaviour of the event. The following events have a default behaviour:</p>
+									<p>Prevents the default behavior of the event. The following events have a default behavior:</p>
 								</div>
 								<ul>
 									<li><p><code>sessionDisconnected</code>: dispatched by <a href="session.html">Session</a> object, automatically unsubscribes the leaving participant from every Subscriber object of the session (this includes closing the WebRTCPeer connection and disposing all MediaStreamTracks)
@@ -362,10 +362,16 @@
 						<a href="streammanagerevent.html" class="tsd-kind-icon">Stream<wbr>Manager<wbr>Event</a>
 					</li>
 					<li class=" tsd-kind-class">
+						<a href="streampropertychangedevent.html" class="tsd-kind-icon">Stream<wbr>Property<wbr>Changed<wbr>Event</a>
+					</li>
+					<li class=" tsd-kind-class">
 						<a href="subscriber.html" class="tsd-kind-icon">Subscriber</a>
 					</li>
 					<li class=" tsd-kind-class">
 						<a href="videoelementevent.html" class="tsd-kind-icon">Video<wbr>Element<wbr>Event</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="../interfaces/capabilities.html" class="tsd-kind-icon">Capabilities</a>
 					</li>
 					<li class=" tsd-kind-interface">
 						<a href="../interfaces/device.html" class="tsd-kind-icon">Device</a>
