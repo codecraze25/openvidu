@@ -31,9 +31,9 @@ public interface SessionInterface {
 
 	void join(Participant participant);
 
-	void leave(String participantPrivateId, String reason);
+	void leave(String participantPrivateId, EndReason reason);
 
-	boolean close(String reason);
+	boolean close(EndReason reason);
 
 	boolean isClosed();
 
