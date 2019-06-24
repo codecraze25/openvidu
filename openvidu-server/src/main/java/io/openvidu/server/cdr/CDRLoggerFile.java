@@ -40,9 +40,4 @@ public class CDRLoggerFile implements CDRLogger {
 	public void log(SessionSummary sessionSummary) {
 	}
 
-	@Override
-	public boolean canBeDisabled() {
-		return true;
-	}
-
 }
